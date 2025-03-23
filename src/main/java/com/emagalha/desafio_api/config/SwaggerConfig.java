@@ -12,8 +12,8 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Desafio-Api-Doc")
+                        .title("Desafio API")
                         .version("1.0")
-                        .description("APi para avaliacao tecnica"));
+                        .description("API para gerenciamento de pessoas e endereços."));
     }
 }

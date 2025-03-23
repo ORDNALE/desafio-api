@@ -2,18 +2,18 @@ package com.emagalha.desafio_api.service;
 
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.emagalha.desafio_api.entity.Lotacao;
 import com.emagalha.desafio_api.repository.LotacaoRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class LotacaoService {
 
-    @Autowired
-    private LotacaoRepository repository;
+    private  final LotacaoRepository repository;
 
 
     public List<Lotacao> listarTodos() { return repository.findAll(); }

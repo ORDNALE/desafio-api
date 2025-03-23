@@ -5,6 +5,8 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.List;
 
+import io.micrometer.common.lang.NonNull;
+
 @Data
 @Entity
 @Table(name = "endereco")
@@ -30,6 +32,7 @@ public class Endereco implements Serializable {
     private String bairro;
 
     @ManyToOne
+    @NonNull
     @JoinColumn(name = "cid_id", nullable = false)
     private Cidade cidade;
 

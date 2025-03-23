@@ -9,7 +9,8 @@ import com.emagalha.desafio_api.repository.LotacaoRepository;
 import com.emagalha.desafio_api.repository.PessoaRepository;
 import com.emagalha.desafio_api.repository.ServidorEfetivoRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -20,17 +21,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ServidorEfetivoService {
 
-    @Autowired
-    private ServidorEfetivoRepository repository;
+    private final ServidorEfetivoRepository repository;
 
-    @Autowired
-    private LotacaoRepository lotacaoRepository;
+    private final LotacaoRepository lotacaoRepository;
 
-    @Autowired
-    private PessoaRepository pessoaRepository;
-
+    private final PessoaRepository pessoaRepository;
 
     public List<ServidorEfetivo> listarTodos() {
         return repository.findAll();

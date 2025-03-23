@@ -5,6 +5,8 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.Date;
 
+import io.micrometer.common.lang.NonNull;
+
 @Data
 @Entity
 @Table(name = "foto_pessoa")
@@ -18,6 +20,7 @@ public class FotoPessoa implements Serializable {
     private int id;
 
     @ManyToOne
+    @NonNull
     @JoinColumn(name = "pes_id", nullable = false)
     private Pessoa pessoa;
 

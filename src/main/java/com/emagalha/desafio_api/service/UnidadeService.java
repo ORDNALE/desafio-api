@@ -3,17 +3,18 @@ package com.emagalha.desafio_api.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.emagalha.desafio_api.entity.Unidade;
 import com.emagalha.desafio_api.repository.UnidadeRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class UnidadeService {
 
-    @Autowired
-    private UnidadeRepository repository;
+    private final UnidadeRepository repository;
 
     public List<Unidade> listarUnidades() {
         return repository.findAll();
