@@ -13,6 +13,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                .requestMatchers("/public/**").permitAll() // Permitir acesso público a endpoints específicos
                 .anyRequest().authenticated()
             )
             .csrf(AbstractHttpConfigurer::disable);

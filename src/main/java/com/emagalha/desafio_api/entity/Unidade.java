@@ -15,7 +15,7 @@ public class Unidade implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_unidade")
     @Column(name = "unid_id")
-    private int id;
+    private Integer id;
 
     @Column(name = "unid_nome", length = 200)
     private String nome;

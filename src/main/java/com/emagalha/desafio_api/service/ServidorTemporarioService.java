@@ -1,14 +1,16 @@
 package com.emagalha.desafio_api.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-
+import com.emagalha.desafio_api.dto.ServidorTemporarioDTO;
 import com.emagalha.desafio_api.entity.ServidorTemporario;
+import com.emagalha.desafio_api.exception.ResourceNotFoundException;
 import com.emagalha.desafio_api.repository.ServidorTemporarioRepository;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,20 +18,49 @@ public class ServidorTemporarioService {
 
     private final ServidorTemporarioRepository repository;
 
-    public List<ServidorTemporario> listarTodos() {
-        return repository.findAll();
+    public List<ServidorTemporarioDTO> listarTodos() {
+        return repository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public Optional<ServidorTemporario> buscarPorId(int id) {
-        return repository.findById(id);
+    public ServidorTemporarioDTO buscarPorId(Integer id) {
+        ServidorTemporario servidor = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Servidor Temporário com ID " + id + " não encontrado"));
+        return convertToDTO(servidor);
     }
 
-    public ServidorTemporario salvar(ServidorTemporario servidor) {
-        return repository.save(servidor);
+    public ServidorTemporarioDTO salvar(ServidorTemporarioDTO servidorDTO) {
+        ServidorTemporario servidor = new ServidorTemporario();
+        servidor.setId(servidorDTO.getPessoaId());
+        servidor.setDataAdmissao(servidorDTO.getDataAdmissao());
+        servidor.setDataDemissao(servidorDTO.getDataDemissao());
+        ServidorTemporario servidorSalvo = repository.save(servidor);
+        return convertToDTO(servidorSalvo);
     }
 
-    public void deletar(int id){
+    public ServidorTemporarioDTO atualizar(Integer id, ServidorTemporarioDTO servidorDTO) {
+        ServidorTemporario servidor = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Servidor Temporário com ID " + id + " não encontrado"));
+        servidor.setDataAdmissao(servidorDTO.getDataAdmissao());
+        servidor.setDataDemissao(servidorDTO.getDataDemissao());
+        ServidorTemporario servidorAtualizado = repository.save(servidor);
+        return convertToDTO(servidorAtualizado);
+    }
+
+    public void deletar(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Servidor Temporário com ID " + id + " não encontrado");
+        }
         repository.deleteById(id);
     }
-    
+
+    private ServidorTemporarioDTO convertToDTO(ServidorTemporario servidor) {
+        ServidorTemporarioDTO dto = new ServidorTemporarioDTO();
+        dto.setPessoaId(servidor.getId());
+        dto.setDataAdmissao(servidor.getDataAdmissao());
+        dto.setDataDemissao(servidor.getDataDemissao());
+        return dto;
+    }
 }

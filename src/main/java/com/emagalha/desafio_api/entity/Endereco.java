@@ -1,11 +1,12 @@
 package com.emagalha.desafio_api.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.List;
-
-import io.micrometer.common.lang.NonNull;
 
 @Data
 @Entity
@@ -17,28 +18,40 @@ public class Endereco implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_endereco")
     @Column(name = "end_id")
-    private int id;
+    private Integer id;
 
-    @Column(name = "end_tipo_logradouro", length = 50)
+    @Column(name = "end_tipo_logradouro", length = 50, nullable = false)
     private String tipoLogradouro;
 
-    @Column(name = "end_logradouro", length = 200)
+    @Column(name = "end_logradouro", length = 200, nullable = false)
     private String logradouro;
 
-    @Column(name = "end_numero")
+    @Column(name = "end_numero", nullable = false)
     private String numero;
 
-    @Column(name = "end_bairro", length = 200)
+    @Column(name = "end_bairro", length = 200, nullable = false)
     private String bairro;
 
     @ManyToOne
-    @NonNull
+    @NotNull
     @JoinColumn(name = "cid_id", nullable = false)
     private Cidade cidade;
 
-    @ManyToMany(mappedBy = "enderecos")
-    private List<Unidade> unidades;
-
-    @ManyToMany(mappedBy = "enderecos")
+    @ManyToMany
+    @JsonIgnore
+    @JoinTable(
+        name = "pessoa_endereco",
+        joinColumns = @JoinColumn(name = "end_id"),
+        inverseJoinColumns = @JoinColumn(name = "pes_id")
+    )
     private List<Pessoa> pessoas;
+
+    @ManyToMany
+    @JsonIgnore
+    @JoinTable(
+        name = "unidade_endereco",
+        joinColumns = @JoinColumn(name = "end_id"),
+        inverseJoinColumns = @JoinColumn(name = "unid_id")
+    )
+    private List<Unidade> unidades;
 }

@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class CidadeDTO {
-    private int id;
+    private Integer id;
     private String nome;
     private String uf;
 }

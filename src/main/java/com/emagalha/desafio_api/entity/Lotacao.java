@@ -17,15 +17,13 @@ public class Lotacao implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_lotacao")
     @Column(name = "lot_id")
-    private int id;
+    private Integer id;
 
-    @ManyToOne
-    @NonNull
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "pes_id", nullable = false)
     private Pessoa pessoa;
 
-    @ManyToOne
-    @NonNull
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "unid_id", nullable = false)
     private Unidade unidade;
 
@@ -39,5 +37,9 @@ public class Lotacao implements Serializable {
 
     @Column(name = "lot_portaria", length = 100)
     private String portaria;
+
+    @ManyToOne
+    @JoinColumn(name = "pes_id", nullable = false, insertable = false, updatable = false)
+    private ServidorEfetivo servidor;
 
 }

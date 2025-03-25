@@ -14,6 +14,6 @@ public class SwaggerConfig {
                 .info(new Info()
                         .title("Desafio API")
                         .version("1.0")
-                        .description("API para gerenciamento de pessoas e endereços."));
+                        .description("API para gerenciamento de pessoas e endereços - desafio tecnico"));
     }
 }

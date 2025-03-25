@@ -2,23 +2,16 @@ package com.emagalha.desafio_api.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.io.Serializable;
+import lombok.EqualsAndHashCode;
+
 import java.util.Date;
 
 @Data
 @Entity
 @Table(name = "servidor_temporario")
-public class ServidorTemporario implements Serializable {
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @Column(name = "pes_id")
-    private int id;
-
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "pes_id")
-    private Pessoa pessoa;
+@EqualsAndHashCode(callSuper = true)
+@PrimaryKeyJoinColumn(name = "pes_id")
+public class ServidorTemporario extends Pessoa {
 
     @Column(name = "st_data_admissao")
     @Temporal(TemporalType.DATE)
@@ -27,4 +20,8 @@ public class ServidorTemporario implements Serializable {
     @Column(name = "st_data_demissao")
     @Temporal(TemporalType.DATE)
     private Date dataDemissao;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pes_id", insertable = false, updatable = false)
+    private Pessoa pessoa;
 }

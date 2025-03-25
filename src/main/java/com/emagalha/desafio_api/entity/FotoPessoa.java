@@ -5,8 +5,6 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.Date;
 
-import io.micrometer.common.lang.NonNull;
-
 @Data
 @Entity
 @Table(name = "foto_pessoa")
@@ -17,10 +15,9 @@ public class FotoPessoa implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_foto_pessoa")
     @Column(name = "fp_id")
-    private int id;
+    private Integer id;
 
     @ManyToOne
-    @NonNull
     @JoinColumn(name = "pes_id", nullable = false)
     private Pessoa pessoa;
 

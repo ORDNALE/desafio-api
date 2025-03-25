@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class UnidadeEnderecoDTO {
-    private int enderecoId;
-    private int unidadeId;
+    private Integer enderecoId;
+    private Integer unidadeId;
 }
