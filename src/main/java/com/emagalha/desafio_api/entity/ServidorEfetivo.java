@@ -1,30 +1,57 @@
 package com.emagalha.desafio_api.entity;
 
-import java.util.List;
-
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "servidor_efetivo")
-@PrimaryKeyJoinColumn(name = "pes_id")
-@EqualsAndHashCode(callSuper = true)
-public class ServidorEfetivo extends Pessoa {
+public class ServidorEfetivo implements Serializable {
     
-    @Column(name = "se_matricula", length = 20)
+    @Id
+    @Column(name = "pes_id")
+    private Integer id;
+    
+    @MapsId
+    @OneToOne
+    @JoinColumn(name = "pes_id")
+    private Pessoa pessoa;
+    
+    @Column(name = "se_matricula", length = 20, unique = true)
     private String matricula;
     
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pes_id", insertable = false, updatable = false)
-    private Pessoa pessoa;
+    @OneToMany(mappedBy = "servidorEfetivo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Lotacao> lotacoes = new HashSet<>();
 
-    @OneToMany(mappedBy = "servidor", fetch = FetchType.LAZY)
-    private List<Lotacao> lotacoes;
+    @Override
+    public String toString() {
+        return "ServidorEfetivo{" +
+            "id=" + id +
+            ", matricula='" + matricula + '\'' +
+            '}';
+    }
 
-    @OneToMany(mappedBy = "servidor", fetch = FetchType.LAZY)
-    private List<FotoPessoa> fotos;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ServidorEfetivo that = (ServidorEfetivo) o;
+        return Objects.equals(id, that.id);
+    }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

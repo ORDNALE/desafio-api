@@ -1,28 +1,25 @@
 package com.emagalha.desafio_api.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import java.io.Serializable;
-import java.util.List;
 
 @Data
 @Entity
 @Table(name = "cidade")
-@SequenceGenerator(name = "seq_cidade", sequenceName = "seq_cidade", allocationSize = 1, initialValue = 1)
+@SequenceGenerator(name = "seq_cidade", sequenceName = "seq_cidade", allocationSize = 1)
 public class Cidade implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_cidade")
     @Column(name = "cid_id")
     private Integer id;
-
-    @Column(name = "cid_nome", length = 200)
+    
+    @Column(name = "cid_nome", length = 200, nullable = false)
     private String nome;
-
-    @Column(name = "cid_uf", length = 2)
+    
+    @Column(name = "cid_uf", columnDefinition = "char(2)", nullable = false, length = 2)
+    @Size(min = 2, max = 2)
     private String uf;
-
-    @OneToMany(mappedBy = "cidade", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Endereco> enderecos;
 }

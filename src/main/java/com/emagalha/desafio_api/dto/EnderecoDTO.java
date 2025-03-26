@@ -7,7 +7,7 @@ public class EnderecoDTO {
     private Integer id;
     private String tipoLogradouro;
     private String logradouro;
-    private String numero;
+    private Integer numero;
     private String bairro;
     private Integer cidadeId;
     private Integer unidadeId; 

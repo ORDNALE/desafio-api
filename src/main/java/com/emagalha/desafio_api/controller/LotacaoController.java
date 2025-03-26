@@ -1,72 +1,113 @@
-package com.emagalha.desafio_api.controller;
+// package com.emagalha.desafio_api.controller;
 
-import java.util.List;
+// import com.emagalha.desafio_api.dto.LotacaoDTO;
+// import com.emagalha.desafio_api.entity.Lotacao;
+// import com.emagalha.desafio_api.service.LotacaoService;
+// import io.swagger.v3.oas.annotations.Operation;
+// import io.swagger.v3.oas.annotations.responses.ApiResponse;
+// import io.swagger.v3.oas.annotations.responses.ApiResponses;
+// import io.swagger.v3.oas.annotations.tags.Tag;
+// import jakarta.validation.Valid;
+// import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.http.HttpStatus;
+// import org.springframework.http.ResponseEntity;
+// import org.springframework.web.bind.annotation.*;
 
-import com.emagalha.desafio_api.dto.LotacaoDTO;
-import com.emagalha.desafio_api.service.LotacaoService;
+// import java.util.List;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+// @RestController
+// @RequestMapping("/api/lotacoes")
+// @Tag(name = "Lotação", description = "API para gerenciamento de lotações")
+// public class LotacaoController {
 
-@RestController
-@RequestMapping("api/lotacao")
-@Tag(name = "Lotação", description = "Endpoints para gerenciamento de lotações")
-@RequiredArgsConstructor
-public class LotacaoController {
+//     private final LotacaoService lotacaoService;
 
-    private final LotacaoService service;
+//     @Autowired
+//     public LotacaoController(LotacaoService lotacaoService) {
+//         this.lotacaoService = lotacaoService;
+//     }
 
-    @GetMapping("/listar")
-    @Operation(summary = "Listar todas as lotações", description = "Retorna uma lista de todas as lotações cadastradas.")
-    public ResponseEntity<List<LotacaoDTO>> listarTodos() {
-        List<LotacaoDTO> lotacoes = service.listarTodos();
-        return ResponseEntity.ok(lotacoes);
-    }
+//     @PostMapping
+//     @Operation(summary = "Criar uma nova lotação")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "201", description = "Lotação criada com sucesso"),
+//         @ApiResponse(responseCode = "400", description = "Dados inválidos")
+//     })
+//     public ResponseEntity<Lotacao> create(@Valid @RequestBody Lotacao lotacao) {
+//         Lotacao saved = lotacaoService.save(lotacao);
+//         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+//     }
 
-    @GetMapping("/buscar/{id}")
-    @Operation(summary = "Buscar lotação por ID", description = "Retorna uma lotação com base no ID fornecido.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Lotação encontrada"),
-        @ApiResponse(responseCode = "404", description = "Lotação não encontrada")
-    })
-    public ResponseEntity<LotacaoDTO> buscarPorId(@PathVariable Integer id) {
-        LotacaoDTO lotacao = service.buscarPorId(id);
-        return ResponseEntity.ok(lotacao);
-    }
+//     @GetMapping("/{id}")
+//     @Operation(summary = "Obter uma lotação pelo ID")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "200", description = "Lotação encontrada"),
+//         @ApiResponse(responseCode = "404", description = "Lotação não encontrada")
+//     })
+//     public ResponseEntity<Lotacao> getById(@PathVariable Integer id) {
+//         return ResponseEntity.ok(lotacaoService.findById(id));
+//     }
 
-    @PostMapping("/cadastrar")
-    @Operation(summary = "Criar uma nova lotação", description = "Inclui uma nova lotação com os dados fornecidos.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Lotação criada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
-    })
-    public ResponseEntity<LotacaoDTO> salvar(@RequestBody LotacaoDTO lotacaoDTO) {
-        LotacaoDTO lotacaoSalva = service.salvar(lotacaoDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(lotacaoSalva);
-    }
+//     @GetMapping
+//     @Operation(summary = "Listar todas as lotações")
+//     @ApiResponse(responseCode = "200", description = "Lista de lotações")
+//     public ResponseEntity<List<Lotacao>> getAll() {
+//         return ResponseEntity.ok(lotacaoService.findAll());
+//     }
 
-    @PutMapping("/atualizar/{id}")
-    @Operation(summary = "Atualizar uma lotação", description = "Atualiza os dados de uma lotação existente.")
-    public ResponseEntity<LotacaoDTO> atualizar(@PathVariable Integer id, @RequestBody LotacaoDTO lotacaoDTO) {
-        LotacaoDTO lotacaoAtualizada = service.atualizar(id, lotacaoDTO);
-        return ResponseEntity.ok(lotacaoAtualizada);
-    }
+//     @PutMapping("/{id}")
+//     @Operation(summary = "Atualizar uma lotação existente")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "200", description = "Lotação atualizada com sucesso"),
+//         @ApiResponse(responseCode = "404", description = "Lotação não encontrada"),
+//         @ApiResponse(responseCode = "400", description = "Dados inválidos")
+//     })
+//     public ResponseEntity<Lotacao> update(@PathVariable Integer id, @Valid @RequestBody Lotacao lotacao) {
+//         return ResponseEntity.ok(lotacaoService.update(id, lotacao));
+//     }
 
-    @DeleteMapping("/deletar/{id}")
-    @Operation(summary = "Deletar lotação por ID", description = "Remove uma lotação com base no ID fornecido.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Lotação deletada com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Lotação não encontrada")
-    })
-    public ResponseEntity<Void> deletar(@PathVariable Integer id) {
-        service.deletar(id);
-        return ResponseEntity.noContent().build();
-    }
-}
+//     @DeleteMapping("/{id}")
+//     @Operation(summary = "Excluir uma lotação")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "204", description = "Lotação excluída com sucesso"),
+//         @ApiResponse(responseCode = "404", description = "Lotação não encontrada")
+//     })
+//     public ResponseEntity<Void> delete(@PathVariable Integer id) {
+//         lotacaoService.delete(id);
+//         return ResponseEntity.noContent().build();
+//     }
+
+//     @GetMapping("/pessoa/{pessoaId}")
+//     @Operation(summary = "Listar lotações por pessoa")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "200", description = "Lotações encontradas"),
+//         @ApiResponse(responseCode = "404", description = "Pessoa não encontrada")
+//     })
+//     public ResponseEntity<List<Lotacao>> getByPessoaId(@PathVariable Integer pessoaId) {
+//         return ResponseEntity.ok(lotacaoService.findByPessoaId(pessoaId));
+//     }
+
+//     @GetMapping("/unidade/{unidadeId}")
+//     @Operation(summary = "Listar lotações por unidade")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "200", description = "Lotações encontradas"),
+//         @ApiResponse(responseCode = "404", description = "Unidade não encontrada")
+//     })
+//     public ResponseEntity<List<Lotacao>> getByUnidadeId(@PathVariable Integer unidadeId) {
+//         return ResponseEntity.ok(lotacaoService.findByUnidadeId(unidadeId));
+//     }
+// }
+
+//     @DeleteMapping("/deletar/{id}")
+//     @Operation(summary = "Deletar lotação por ID", description = "Remove uma lotação com base no ID fornecido.")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "204", description = "Lotação deletada com sucesso"),
+//         @ApiResponse(responseCode = "404", description = "Lotação não encontrada")
+//     })
+//     public ResponseEntity<Void> deletar(@PathVariable Integer id) {
+//         service.deletar(id);
+//         return ResponseEntity.noContent().build();
+//     }
+// }

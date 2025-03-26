@@ -1,17 +1,31 @@
 package com.emagalha.desafio_api.dto;
 
-import lombok.Data;
-import java.util.Date;
-
+import com.emagalha.desafio_api.entity.Lotacao;
 import com.emagalha.desafio_api.entity.Pessoa;
 import com.emagalha.desafio_api.entity.Unidade;
 
-@Data
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class LotacaoDTO {
     private Integer id;
-    private Pessoa pessoa;
-    private Unidade unidade;
-    private Date dataLotacao;
-    private Date dataRemocao;
+    @NotNull
+    private Integer pessoaId;
+    @NotNull
+    private Integer unidadeId;
+    @NotNull
+    private LocalDate dataLotacao;
+    private LocalDate dataRemocao;
+    @Size(max = 100)
     private String portaria;
 }

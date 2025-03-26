@@ -1,65 +1,70 @@
 package com.emagalha.desafio_api.service;
 
-import com.emagalha.desafio_api.dto.UnidadeDTO;
-import com.emagalha.desafio_api.entity.Unidade;
-import com.emagalha.desafio_api.exception.ResourceNotFoundException;
-import com.emagalha.desafio_api.repository.UnidadeRepository;
+import java.util.List;
 
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.emagalha.desafio_api.dto.UnidadeDTO;
+import com.emagalha.desafio_api.entity.Unidade;
+import com.emagalha.desafio_api.exception.BusinessException;
+import com.emagalha.desafio_api.repository.UnidadeRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 @Service
-@RequiredArgsConstructor
+@Transactional
 public class UnidadeService {
 
-    private final UnidadeRepository repository;
+    private final UnidadeRepository unidadeRepository;
 
-    public List<UnidadeDTO> listarTodos() {
-        return repository.findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    @Autowired
+    public UnidadeService(UnidadeRepository unidadeRepository) {
+        this.unidadeRepository = unidadeRepository;
     }
 
-    public UnidadeDTO buscarPorId(Integer id) {
-        Unidade unidade = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Unidade com ID " + id + " não encontrada"));
-        return convertToDTO(unidade);
-    }
-
-    public UnidadeDTO salvar(UnidadeDTO unidadeDTO) {
-        Unidade unidade = new Unidade();
-        unidade.setNome(unidadeDTO.getNome());
-        unidade.setSigla(unidadeDTO.getSigla());
-        Unidade unidadeSalva = repository.save(unidade);
-        return convertToDTO(unidadeSalva);
-    }
-
-    public UnidadeDTO atualizar(Integer id, UnidadeDTO unidadeDTO) {
-        Unidade unidade = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Unidade com ID " + id + " não encontrada"));
-        unidade.setNome(unidadeDTO.getNome());
-        unidade.setSigla(unidadeDTO.getSigla());
-        Unidade unidadeAtualizada = repository.save(unidade);
-        return convertToDTO(unidadeAtualizada);
-    }
-
-    public void deletar(Integer id) {
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Unidade com ID " + id + " não encontrada");
+    public Unidade save(UnidadeDTO dto) {
+        try {
+            Unidade unidade = new Unidade();
+            mapDTOToEntity(dto, unidade);
+            return unidadeRepository.save(unidade);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Erro ao salvar unidade: " + e.getMessage());
         }
-        repository.deleteById(id);
     }
 
-    private UnidadeDTO convertToDTO(Unidade unidade) {
-        UnidadeDTO dto = new UnidadeDTO();
-        dto.setId(unidade.getId());
-        dto.setNome(unidade.getNome());
-        dto.setSigla(unidade.getSigla());
-        return dto;
+    public Unidade findById(Integer id) {
+        return unidadeRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada com ID: " + id));
+    }
+
+    public List<Unidade> findAll() {
+        return unidadeRepository.findAll();
+    }
+
+    public Unidade update(Integer id, UnidadeDTO dto) {
+        Unidade unidade = findById(id);
+        try {
+            mapDTOToEntity(dto, unidade);
+            return unidadeRepository.save(unidade);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Erro ao atualizar unidade: " + e.getMessage());
+        }
+    }
+
+    public void delete(Integer id) {
+        Unidade unidade = findById(id);
+        try {
+            unidadeRepository.delete(unidade);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Não é possível excluir a unidade pois está sendo referenciada por outros registros");
+        }
+    }
+
+    private void mapDTOToEntity(UnidadeDTO dto, Unidade entity) {
+        entity.setNome(dto.getNome());
+        entity.setSigla(dto.getSigla());
     }
 }

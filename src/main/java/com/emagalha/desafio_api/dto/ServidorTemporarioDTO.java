@@ -1,11 +1,14 @@
 package com.emagalha.desafio_api.dto;
 
-import lombok.Data;
-import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+import java.time.LocalDate;
+
+@Getter
+@Setter
 public class ServidorTemporarioDTO {
     private Integer pessoaId;
-    private Date dataAdmissao;
-    private Date dataDemissao;
+    private LocalDate dataAdmissao;
+    private LocalDate dataDemissao;
 }

@@ -12,11 +12,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
-                .requestMatchers("/public/**").permitAll() // Permitir acesso público a endpoints específicos
-                .anyRequest().authenticated()
+                .anyRequest().permitAll() // Permitir acesso público a todos os endpoints
             )
-            .csrf(AbstractHttpConfigurer::disable);
+            .csrf(AbstractHttpConfigurer::disable); // Desabilita a proteção CSRF
         return http.build();
     }
 }

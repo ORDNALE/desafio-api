@@ -1,72 +1,82 @@
-package com.emagalha.desafio_api.controller;
+// package com.emagalha.desafio_api.controller;
 
-import java.util.List;
+// import java.util.List;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.http.HttpStatus;
+// import org.springframework.http.ResponseEntity;
+// import org.springframework.web.bind.annotation.*;
 
-import com.emagalha.desafio_api.dto.ServidorTemporarioDTO;
-import com.emagalha.desafio_api.service.ServidorTemporarioService;
+// import com.emagalha.desafio_api.dto.ServidorTemporarioDTO;
+// import com.emagalha.desafio_api.entity.ServidorTemporario;
+// import com.emagalha.desafio_api.service.ServidorTemporarioService;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+// import io.swagger.v3.oas.annotations.Operation;
+// import io.swagger.v3.oas.annotations.responses.ApiResponse;
+// import io.swagger.v3.oas.annotations.responses.ApiResponses;
+// import io.swagger.v3.oas.annotations.tags.Tag;
+// import jakarta.validation.Valid;
+// import lombok.RequiredArgsConstructor;
 
-@RestController
-@RequestMapping("api/servidor-temporario")
-@Tag(name = "Servidor Temporário", description = "Endpoints para gerenciamento de servidores temporários")
-@RequiredArgsConstructor
-public class ServidorTemporarioController {
+// @RestController
+// @RequestMapping("/api/servidores-temporarios")
+// @Tag(name = "Servidor Temporário", description = "API para gerenciamento de servidores temporários")
+// public class ServidorTemporarioController {
 
-    private final ServidorTemporarioService service;
+//     private final ServidorTemporarioService servidorTemporarioService;
 
-    @GetMapping("/listar")
-    @Operation(summary = "Listar todos os servidores temporários", description = "Retorna uma lista de todos os servidores temporários cadastrados.")
-    public ResponseEntity<List<ServidorTemporarioDTO>> listarTodos() {
-        List<ServidorTemporarioDTO> servidores = service.listarTodos();
-        return ResponseEntity.ok(servidores);
-    }
+//     @Autowired
+//     public ServidorTemporarioController(ServidorTemporarioService servidorTemporarioService) {
+//         this.servidorTemporarioService = servidorTemporarioService;
+//     }
 
-    @GetMapping("/buscar/{id}")
-    @Operation(summary = "Buscar servidor temporário por ID", description = "Retorna um servidor temporário com base no ID fornecido.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Servidor encontrado"),
-        @ApiResponse(responseCode = "404", description = "Servidor não encontrado")
-    })
-    public ResponseEntity<ServidorTemporarioDTO> buscarPorId(@PathVariable Integer id) {
-        ServidorTemporarioDTO servidorTemporario = service.buscarPorId(id);
-        return ResponseEntity.ok(servidorTemporario);
-    }
+//     @PostMapping
+//     @Operation(summary = "Criar um novo servidor temporário")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "201", description = "Servidor temporário criado com sucesso"),
+//         @ApiResponse(responseCode = "400", description = "Dados inválidos")
+//     })
+//     public ResponseEntity<ServidorTemporario> create(@Valid @RequestBody ServidorTemporario servidorTemporario) {
+//         ServidorTemporario saved = servidorTemporarioService.save(servidorTemporario);
+//         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+//     }
 
-    @PostMapping("/cadastrar")
-    @Operation(summary = "Criar um novo servidor temporário", description = "Inclui um novo servidor temporário com os dados fornecidos.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Servidor criado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
-    })
-    public ResponseEntity<ServidorTemporarioDTO> salvar(@RequestBody ServidorTemporarioDTO servidorDTO) {
-        ServidorTemporarioDTO servidorSalvo = service.salvar(servidorDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(servidorSalvo);
-    }
+//     @GetMapping("/{id}")
+//     @Operation(summary = "Obter um servidor temporário pelo ID")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "200", description = "Servidor temporário encontrado"),
+//         @ApiResponse(responseCode = "404", description = "Servidor temporário não encontrado")
+//     })
+//     public ResponseEntity<ServidorTemporario> getById(@PathVariable Integer id) {
+//         return ResponseEntity.ok(servidorTemporarioService.findById(id));
+//     }
 
-    @PutMapping("/atualizar/{id}")
-    @Operation(summary = "Atualizar um servidor temporário", description = "Atualiza os dados de um servidor temporário existente.")
-    public ResponseEntity<ServidorTemporarioDTO> atualizar(@PathVariable Integer id, @RequestBody ServidorTemporarioDTO servidorDTO) {
-        ServidorTemporarioDTO servidorAtualizado = service.atualizar(id, servidorDTO);
-        return ResponseEntity.ok(servidorAtualizado);
-    }
+//     @GetMapping
+//     @Operation(summary = "Listar todos os servidores temporários")
+//     @ApiResponse(responseCode = "200", description = "Lista de servidores temporários")
+//     public ResponseEntity<List<ServidorTemporario>> getAll() {
+//         return ResponseEntity.ok(servidorTemporarioService.findAll());
+//     }
 
-    @DeleteMapping("/deletar/{id}")
-    @Operation(summary = "Deletar servidor temporário por ID", description = "Remove um servidor temporário com base no ID fornecido.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Servidor deletado com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Servidor não encontrado")
-    })
-    public ResponseEntity<Void> deletar(@PathVariable Integer id) {
-        service.deletar(id);
-        return ResponseEntity.noContent().build();
-    }
-}
+//     @PutMapping("/{id}")
+//     @Operation(summary = "Atualizar um servidor temporário existente")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "200", description = "Servidor temporário atualizado com sucesso"),
+//         @ApiResponse(responseCode = "404", description = "Servidor temporário não encontrado"),
+//         @ApiResponse(responseCode = "400", description = "Dados inválidos")
+//     })
+//     public ResponseEntity<ServidorTemporario> update(@PathVariable Integer id, @Valid @RequestBody ServidorTemporario servidorTemporario) {
+//         return ResponseEntity.ok(servidorTemporarioService.update(id, servidorTemporario));
+//     }
+
+//     @DeleteMapping("/{id}")
+//     @Operation(summary = "Excluir um servidor temporário")
+//     @ApiResponses({
+//         @ApiResponse(responseCode = "204", description = "Servidor temporário excluído com sucesso"),
+//         @ApiResponse(responseCode = "404", description = "Servidor temporário não encontrado")
+//     })
+//     public ResponseEntity<Void> delete(@PathVariable Integer id) {
+//         servidorTemporarioService.delete(id);
+//         return ResponseEntity.noContent().build();
+//     }
+// }

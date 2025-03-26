@@ -1,57 +1,84 @@
 package com.emagalha.desafio_api.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "pessoa")
+@SequenceGenerator(name = "seq_pessoa", sequenceName = "seq_pessoa", allocationSize = 1)
 public class Pessoa implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_pessoa")
     @Column(name = "pes_id")
     private Integer id;
-
-    @Column(name = "pes_nome", length = 200)
+    
+    @Column(name = "pes_nome", length = 200, nullable = false)
     private String nome;
-
+    
     @Column(name = "pes_data_nascimento")
-    @Temporal(TemporalType.DATE)
-    private Date dataNascimento;
-
+    private LocalDate dataNascimento;
+    
     @Column(name = "pes_sexo", length = 9)
     private String sexo;
-
+    
     @Column(name = "pes_mae", length = 200)
     private String mae;
-
+    
     @Column(name = "pes_pai", length = 200)
     private String pai;
-
-    @OneToOne(mappedBy = "pessoa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    
+    @OneToOne(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
     private ServidorEfetivo servidorEfetivo;
-
-    @OneToOne(mappedBy = "pessoa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    
+    @OneToOne(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
     private ServidorTemporario servidorTemporario;
     
-    @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<FotoPessoa> fotos;
-
-
-    @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Lotacao> lotacoes;
-
+    @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<FotoPessoa> fotos = new HashSet<>();
+    
+    @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Lotacao> lotacoes = new HashSet<>();
+    
     @ManyToMany
     @JoinTable(
         name = "pessoa_endereco",
         joinColumns = @JoinColumn(name = "pes_id"),
         inverseJoinColumns = @JoinColumn(name = "end_id"))
-    private List<Endereco> enderecos;
+    private Set<Endereco> enderecos = new HashSet<>();
 
+    @Override
+    public String toString() {
+        return "Pessoa{" +
+            "id=" + id +
+            ", nome='" + nome + '\'' +
+            ", dataNascimento=" + dataNascimento +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pessoa pessoa = (Pessoa) o;
+        return id != null && Objects.equals(id, pessoa.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

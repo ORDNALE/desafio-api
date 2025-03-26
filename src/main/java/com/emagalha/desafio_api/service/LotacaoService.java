@@ -2,74 +2,102 @@ package com.emagalha.desafio_api.service;
 
 import com.emagalha.desafio_api.dto.LotacaoDTO;
 import com.emagalha.desafio_api.entity.Lotacao;
-import com.emagalha.desafio_api.exception.ResourceNotFoundException;
+import com.emagalha.desafio_api.entity.Pessoa;
+import com.emagalha.desafio_api.entity.Unidade;
+import com.emagalha.desafio_api.exception.BusinessException;
 import com.emagalha.desafio_api.repository.LotacaoRepository;
+import com.emagalha.desafio_api.repository.PessoaRepository;
+import com.emagalha.desafio_api.repository.UnidadeRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+@Transactional
 public class LotacaoService {
 
-    private final LotacaoRepository repository;
+    private final LotacaoRepository lotacaoRepository;
+    private final PessoaRepository pessoaRepository;
+    private final UnidadeRepository unidadeRepository;
 
-    public List<LotacaoDTO> listarTodos() {
-        return repository.findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    public LotacaoService(LotacaoRepository lotacaoRepository,
+                         PessoaRepository pessoaRepository,
+                         UnidadeRepository unidadeRepository) {
+        this.lotacaoRepository = lotacaoRepository;
+        this.pessoaRepository = pessoaRepository;
+        this.unidadeRepository = unidadeRepository;
     }
 
-    public LotacaoDTO buscarPorId(Integer id) {
-        Lotacao lotacao = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Lotação com ID " + id + " não encontrada"));
-        return convertToDTO(lotacao);
-    }
+    public Lotacao save(LotacaoDTO dto) {
+        Pessoa pessoa = pessoaRepository.findById(dto.getPessoaId())
+            .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + dto.getPessoaId()));
 
-    public LotacaoDTO salvar(LotacaoDTO lotacaoDTO) {
-        Lotacao lotacao = new Lotacao();
-        lotacao.setId(lotacaoDTO.getId());
-        lotacao.setPessoa(lotacaoDTO.getPessoa());
-        lotacao.setUnidade(lotacaoDTO.getUnidade());
-        lotacao.setDataLotacao(lotacaoDTO.getDataLotacao());
-        lotacao.setDataRemocao(lotacaoDTO.getDataRemocao());
-        lotacao.setPortaria(lotacaoDTO.getPortaria());
-        Lotacao lotacaoSalva = repository.save(lotacao);
-        return convertToDTO(lotacaoSalva);
-    }
+        Unidade unidade = unidadeRepository.findById(dto.getUnidadeId())
+            .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada com ID: " + dto.getUnidadeId()));
 
-    public LotacaoDTO atualizar(Integer id, LotacaoDTO lotacaoDTO) {
-        Lotacao lotacao = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Lotação com ID " + id + " não encontrada"));
-        lotacao.setPessoa(lotacaoDTO.getPessoa());
-        lotacao.setUnidade(lotacaoDTO.getUnidade());
-        lotacao.setDataLotacao(lotacaoDTO.getDataLotacao());
-        lotacao.setDataRemocao(lotacaoDTO.getDataRemocao());
-        lotacao.setPortaria(lotacaoDTO.getPortaria());
-        Lotacao lotacaoAtualizada = repository.save(lotacao);
-        return convertToDTO(lotacaoAtualizada);
-    }
-
-    public void deletar(Integer id) {
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Lotação com ID " + id + " não encontrada");
+        try {
+            Lotacao lotacao = new Lotacao();
+            lotacao.setPessoa(pessoa);
+            lotacao.setUnidade(unidade);
+            lotacao.setDataLotacao(dto.getDataLotacao());
+            lotacao.setDataRemocao(dto.getDataRemocao());
+            lotacao.setPortaria(dto.getPortaria());
+            return lotacaoRepository.save(lotacao);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Erro ao salvar lotação: " + e.getMessage());
         }
-        repository.deleteById(id);
     }
 
-    private LotacaoDTO convertToDTO(Lotacao lotacao) {
-        LotacaoDTO dto = new LotacaoDTO();
-        dto.setId(lotacao.getId());
-        dto.setPessoa(lotacao.getPessoa());
-        dto.setUnidade(lotacao.getUnidade());
-        dto.setDataLotacao(lotacao.getDataLotacao());
-        dto.setDataRemocao(lotacao.getDataRemocao());
-        dto.setPortaria(lotacao.getPortaria());
-        return dto;
+    public Lotacao findById(Integer id) {
+        return lotacaoRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Lotação não encontrada com ID: " + id));
+    }
+
+    public List<Lotacao> findAll() {
+        return lotacaoRepository.findAll();
+    }
+
+    public Lotacao update(Integer id, LotacaoDTO dto) {
+        Lotacao lotacao = findById(id);
+        Pessoa pessoa = pessoaRepository.findById(dto.getPessoaId())
+            .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + dto.getPessoaId()));
+
+        Unidade unidade = unidadeRepository.findById(dto.getUnidadeId())
+            .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada com ID: " + dto.getUnidadeId()));
+
+        try {
+            lotacao.setPessoa(pessoa);
+            lotacao.setUnidade(unidade);
+            lotacao.setDataLotacao(dto.getDataLotacao());
+            lotacao.setDataRemocao(dto.getDataRemocao());
+            lotacao.setPortaria(dto.getPortaria());
+            return lotacaoRepository.save(lotacao);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Erro ao atualizar lotação: " + e.getMessage());
+        }
+    }
+
+    public void delete(Integer id) {
+        Lotacao lotacao = findById(id);
+        try {
+            lotacaoRepository.delete(lotacao);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Não é possível excluir a lotação pois está sendo referenciada por outros registros");
+        }
+    }
+
+    public List<Lotacao> findByPessoaId(Integer pessoaId) {
+        return lotacaoRepository.findByPessoaId(pessoaId);
+    }
+
+    public List<Lotacao> findByUnidadeId(Integer unidadeId) {
+        return lotacaoRepository.findByUnidadeId(unidadeId);
     }
 }

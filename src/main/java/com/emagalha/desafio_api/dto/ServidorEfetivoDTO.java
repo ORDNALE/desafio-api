@@ -1,9 +1,16 @@
 package com.emagalha.desafio_api.dto;
 
-import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class ServidorEfetivoDTO {
-    private Integer pessoaId;
-    private String matricula;
-}
+        private Integer pessoaId;
+
+        @NotBlank(message = "Matrícula é obrigatória")
+        @Size(max = 20)
+        private String matricula;
+    }
