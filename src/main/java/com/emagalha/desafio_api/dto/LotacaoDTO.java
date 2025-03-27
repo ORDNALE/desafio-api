@@ -1,6 +1,8 @@
 package com.emagalha.desafio_api.dto;
 
 import com.emagalha.desafio_api.entity.Lotacao;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -13,6 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LotacaoDTO {
+    @Schema(example = "1", description = "ID Lotação")
     private Integer id;
 
     @NotNull(message = "ID da pessoa é obrigatório")

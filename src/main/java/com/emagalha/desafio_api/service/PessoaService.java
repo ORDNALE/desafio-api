@@ -25,7 +25,6 @@ public class PessoaService {
 
     @Transactional
     public PessoaDTO save(PessoaDTO pessoaDTO) {
-        // Validação adicional manual se necessário
         if (pessoaDTO.getNome() == null || pessoaDTO.getNome().trim().isEmpty()) {
             throw new BusinessException("Nome da pessoa é obrigatório");
         }
@@ -68,7 +67,6 @@ public class PessoaService {
             Pessoa existingPessoa = pessoaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + id));
             
-            // Atualiza apenas os campos permitidos
             existingPessoa.setNome(pessoaDTO.getNome());
             existingPessoa.setDataNascimento(pessoaDTO.getDataNascimento());
             existingPessoa.setSexo(pessoaDTO.getSexo());
@@ -83,10 +81,11 @@ public class PessoaService {
         }
     }
 
-    public void delete(Integer id) {
+    public String delete(Integer id) {
         Pessoa pessoa = findById(id);
         try {
             pessoaRepository.delete(pessoa);
+            return "Pessoa (ID: " + id + ") excluído com sucesso.";
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException("Não é possível excluir a pessoa pois está sendo referenciada por outros registros");
         }

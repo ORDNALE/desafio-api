@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -30,9 +28,6 @@ public class ServidorEfetivo implements Serializable {
     
     @Column(name = "se_matricula", length = 20, unique = true)
     private String matricula;
-    
-    @OneToMany(mappedBy = "servidorEfetivo", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Lotacao> lotacoes = new HashSet<>();
 
     @Override
     public String toString() {

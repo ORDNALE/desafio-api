@@ -75,11 +75,12 @@ public class LotacaoService {
         return LotacaoDTO.fromEntity(updated);
     }
 
-    public void delete(Integer id) {
+    public String delete(Integer id) {
         Lotacao lotacao = lotacaoRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Lotação não encontrada com ID: " + id));
         try {
             lotacaoRepository.delete(lotacao);
+            return "Lotacao (ID: " + id + ") excluído com sucesso.";
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException("Erro ao excluir lotação: " + e.getRootCause().getMessage());
         }

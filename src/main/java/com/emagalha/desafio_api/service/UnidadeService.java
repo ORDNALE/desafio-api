@@ -57,11 +57,12 @@ public class UnidadeService {
         return UnidadeDTO.fromEntity(updated);
     }
 
-    public void delete(Integer id) {
+    public String delete(Integer id) {
         Unidade unidade = unidadeRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada com ID: " + id));
         try {
             unidadeRepository.delete(unidade);
+            return "Unidade (ID: " + id + ") excluído com sucesso.";
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException("Não é possível excluir a unidade pois está vinculada a lotações.");
         }

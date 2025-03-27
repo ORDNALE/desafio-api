@@ -1,6 +1,8 @@
 package com.emagalha.desafio_api.dto;
 
 import com.emagalha.desafio_api.entity.ServidorTemporario;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServidorTemporarioDTO {
+    @Schema(example = "1", description = "ID Servidor Temporário")
     private Integer id;
 
     @NotNull(message = "Data de admissão é obrigatória")
@@ -22,7 +25,6 @@ public class ServidorTemporarioDTO {
     @NotNull(message = "ID da pessoa é obrigatório")
     private Integer pessoaId;
 
-    // Métodos de conversão
     public static ServidorTemporarioDTO fromEntity(ServidorTemporario servidor) {
         return new ServidorTemporarioDTO(
             servidor.getId(),

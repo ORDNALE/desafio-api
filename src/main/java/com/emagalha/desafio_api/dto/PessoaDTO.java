@@ -1,6 +1,8 @@
 package com.emagalha.desafio_api.dto;
 
 import com.emagalha.desafio_api.entity.Pessoa;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -10,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PessoaDTO {
+    @Schema(example = "1", description = "ID Pessoa")
     private Integer id;
 
     @NotBlank(message = "Nome é obrigatório")

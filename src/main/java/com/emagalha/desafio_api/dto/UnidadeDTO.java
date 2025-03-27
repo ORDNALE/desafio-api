@@ -2,6 +2,7 @@ package com.emagalha.desafio_api.dto;
 
 import com.emagalha.desafio_api.entity.Unidade;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UnidadeDTO {
+    @Schema(example = "1", description = "ID Unidade")
     private Integer id;
 
     @NotBlank(message = "Nome é obrigatório")

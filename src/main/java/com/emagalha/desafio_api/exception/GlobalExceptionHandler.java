@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse error = new ErrorResponse(
             "VALIDATION_ERROR",
-            String.join("; ", errors), // Junta todos os erros de validação
+            String.join("; ", errors),
             LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
@@ -76,7 +76,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex) {
         ErrorResponse error = new ErrorResponse(
             "INTERNAL_SERVER_ERROR",
-            "Ocorreu um erro inesperado", // Mensagem genérica
+            "Ocorreu um erro inesperado",
             LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

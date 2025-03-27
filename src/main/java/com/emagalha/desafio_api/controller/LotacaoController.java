@@ -2,14 +2,12 @@ package com.emagalha.desafio_api.controller;
 
 import com.emagalha.desafio_api.dto.LotacaoDTO;
 import com.emagalha.desafio_api.dto.LotacaoListDTO;
-import com.emagalha.desafio_api.entity.Lotacao;
 import com.emagalha.desafio_api.service.LotacaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -19,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/lotacoes")
-@Tag(name = "Lotacao", description = "API para gerenciamento de lotações")
+@Tag(name = "4. Lotacao", description = "API para gerenciamento de lotações")
 public class LotacaoController {
 
     private final LotacaoService service;

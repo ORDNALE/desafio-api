@@ -2,14 +2,12 @@ package com.emagalha.desafio_api.controller;
 
 import com.emagalha.desafio_api.dto.UnidadeDTO;
 import com.emagalha.desafio_api.dto.UnidadeListDTO;
-import com.emagalha.desafio_api.entity.Unidade;
 import com.emagalha.desafio_api.service.UnidadeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -19,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/unidades")
-@Tag(name = "Unidade", description = "API para gerenciamento de unidades")
+@Tag(name = "5. Unidade", description = "API para gerenciamento de unidades")
 public class UnidadeController {
 
     private final UnidadeService service;
