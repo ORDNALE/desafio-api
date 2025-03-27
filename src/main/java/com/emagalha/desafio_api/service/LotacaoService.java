@@ -1,23 +1,17 @@
 package com.emagalha.desafio_api.service;
 
 import com.emagalha.desafio_api.dto.LotacaoDTO;
-import com.emagalha.desafio_api.entity.Lotacao;
-import com.emagalha.desafio_api.entity.Pessoa;
-import com.emagalha.desafio_api.entity.Unidade;
+import com.emagalha.desafio_api.dto.LotacaoListDTO;
+import com.emagalha.desafio_api.entity.*;
 import com.emagalha.desafio_api.exception.BusinessException;
-import com.emagalha.desafio_api.repository.LotacaoRepository;
-import com.emagalha.desafio_api.repository.PessoaRepository;
-import com.emagalha.desafio_api.repository.UnidadeRepository;
+import com.emagalha.desafio_api.exception.EntityNotFoundException;
+import com.emagalha.desafio_api.repository.*;
+import jakarta.transaction.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,77 +21,67 @@ public class LotacaoService {
     private final PessoaRepository pessoaRepository;
     private final UnidadeRepository unidadeRepository;
 
-    public LotacaoService(LotacaoRepository lotacaoRepository,
-                         PessoaRepository pessoaRepository,
-                         UnidadeRepository unidadeRepository) {
+    public LotacaoService(
+        LotacaoRepository lotacaoRepository,
+        PessoaRepository pessoaRepository,
+        UnidadeRepository unidadeRepository
+    ) {
         this.lotacaoRepository = lotacaoRepository;
         this.pessoaRepository = pessoaRepository;
         this.unidadeRepository = unidadeRepository;
     }
 
-    public Lotacao save(LotacaoDTO dto) {
+    public LotacaoDTO save(LotacaoDTO dto) {
         Pessoa pessoa = pessoaRepository.findById(dto.getPessoaId())
             .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + dto.getPessoaId()));
 
         Unidade unidade = unidadeRepository.findById(dto.getUnidadeId())
             .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada com ID: " + dto.getUnidadeId()));
 
+        Lotacao lotacao = dto.toEntity();
+        lotacao.setPessoa(pessoa);
+        lotacao.setUnidade(unidade);
+
         try {
-            Lotacao lotacao = new Lotacao();
-            lotacao.setPessoa(pessoa);
-            lotacao.setUnidade(unidade);
-            lotacao.setDataLotacao(dto.getDataLotacao());
-            lotacao.setDataRemocao(dto.getDataRemocao());
-            lotacao.setPortaria(dto.getPortaria());
-            return lotacaoRepository.save(lotacao);
+            Lotacao saved = lotacaoRepository.save(lotacao);
+            return LotacaoDTO.fromEntity(saved);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Erro ao salvar lotação: " + e.getMessage());
+            throw new BusinessException("Erro ao salvar lotação: " + e.getRootCause().getMessage());
         }
     }
 
-    public Lotacao findById(Integer id) {
-        return lotacaoRepository.findById(id)
+    public List<LotacaoListDTO> findAll() {
+        return lotacaoRepository.findAll()
+            .stream()
+            .map(LotacaoListDTO::fromEntity)
+            .toList();
+    }
+
+    public LotacaoListDTO findById(Integer id) {
+        Lotacao lotacao = lotacaoRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Lotação não encontrada"));
+        return LotacaoListDTO.fromEntity(lotacao);
+    }
+
+    public LotacaoDTO update(Integer id, LotacaoDTO dto) {
+        Lotacao existingLotacao = lotacaoRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Lotação não encontrada com ID: " + id));
-    }
 
-    public List<Lotacao> findAll() {
-        return lotacaoRepository.findAll();
-    }
+        existingLotacao.setDataLotacao(dto.getDataLotacao());
+        existingLotacao.setDataRemocao(dto.getDataRemocao());
+        existingLotacao.setPortaria(dto.getPortaria());
 
-    public Lotacao update(Integer id, LotacaoDTO dto) {
-        Lotacao lotacao = findById(id);
-        Pessoa pessoa = pessoaRepository.findById(dto.getPessoaId())
-            .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + dto.getPessoaId()));
-
-        Unidade unidade = unidadeRepository.findById(dto.getUnidadeId())
-            .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada com ID: " + dto.getUnidadeId()));
-
-        try {
-            lotacao.setPessoa(pessoa);
-            lotacao.setUnidade(unidade);
-            lotacao.setDataLotacao(dto.getDataLotacao());
-            lotacao.setDataRemocao(dto.getDataRemocao());
-            lotacao.setPortaria(dto.getPortaria());
-            return lotacaoRepository.save(lotacao);
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Erro ao atualizar lotação: " + e.getMessage());
-        }
+        Lotacao updated = lotacaoRepository.save(existingLotacao);
+        return LotacaoDTO.fromEntity(updated);
     }
 
     public void delete(Integer id) {
-        Lotacao lotacao = findById(id);
+        Lotacao lotacao = lotacaoRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Lotação não encontrada com ID: " + id));
         try {
             lotacaoRepository.delete(lotacao);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Não é possível excluir a lotação pois está sendo referenciada por outros registros");
+            throw new BusinessException("Erro ao excluir lotação: " + e.getRootCause().getMessage());
         }
-    }
-
-    public List<Lotacao> findByPessoaId(Integer pessoaId) {
-        return lotacaoRepository.findByPessoaId(pessoaId);
-    }
-
-    public List<Lotacao> findByUnidadeId(Integer unidadeId) {
-        return lotacaoRepository.findByUnidadeId(unidadeId);
     }
 }

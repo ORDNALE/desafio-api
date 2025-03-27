@@ -16,7 +16,7 @@ public class SequenceInitializer {
     @PersistenceContext
     private EntityManager em;
 
-    @Scheduled(initialDelay = 6000, fixedRate = Integer.MAX_VALUE)
+    @Scheduled(initialDelay = 5000, fixedRate = Integer.MAX_VALUE)
     @Transactional
     public void initializeSequences() {
         try {

@@ -1,6 +1,7 @@
 package com.emagalha.desafio_api.controller;
 
 import com.emagalha.desafio_api.dto.PessoaDTO;
+import com.emagalha.desafio_api.dto.PessoaListDTO;
 import com.emagalha.desafio_api.entity.Pessoa;
 import com.emagalha.desafio_api.service.PessoaService;
 
@@ -60,7 +61,7 @@ public class PessoaController {
     @GetMapping
     @Operation(summary = "Listar todas as pessoas")
     @ApiResponse(responseCode = "200", description = "Lista de pessoas")
-    public ResponseEntity<List<Pessoa>> getAll() {
+    public ResponseEntity<List<PessoaListDTO>> getAll() {
         return ResponseEntity.ok(pessoaService.findAll());
     }
 

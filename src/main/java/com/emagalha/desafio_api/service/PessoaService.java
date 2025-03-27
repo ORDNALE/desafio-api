@@ -5,6 +5,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.emagalha.desafio_api.dto.PessoaDTO;
+import com.emagalha.desafio_api.dto.PessoaListDTO;
 import com.emagalha.desafio_api.entity.Pessoa;
 import com.emagalha.desafio_api.exception.BusinessException;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
@@ -51,8 +52,14 @@ public class PessoaService {
             .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + id));
     }
 
-    public List<Pessoa> findAll() {
-        return pessoaRepository.findAll();
+    public List<PessoaListDTO> findAll() {
+    return pessoaRepository.findAll().stream()
+        .map(p -> new PessoaListDTO(
+            p.getId(),
+            p.getNome(),
+            p.getDataNascimento()
+        ))
+        .toList();
     }
 
     @Transactional
