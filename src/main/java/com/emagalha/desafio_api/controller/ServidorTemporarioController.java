@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+
+import org.simpleframework.xml.Path;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -17,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/servidores-temporarios")
-@Tag(name = "3. Servidor Temporário", description = "API para gerenciamento de servidores temporários")
+@Tag(name = "3.Servidor Temporário", description = "API para gerenciamento de servidores temporários")
 public class ServidorTemporarioController {
 
     private final ServidorTemporarioService service;
@@ -27,6 +29,7 @@ public class ServidorTemporarioController {
     }
 
     @PostMapping
+    @Path("/incluir")
     @Operation(summary = "Criar um novo servidor temporário")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Servidor criado com sucesso"),
@@ -43,6 +46,7 @@ public class ServidorTemporarioController {
     }
 
     @GetMapping
+    @Path("/listar-todos")
     @Operation(summary = "Listar todos os servidores temporários")
     @ApiResponse(responseCode = "200", description = "Lista de servidores temporários")
     public ResponseEntity<List<ServidorTemporarioListDTO>> getAll() {
@@ -50,6 +54,7 @@ public class ServidorTemporarioController {
     }
 
     @GetMapping("/{id}")
+    @Path("/listar")
     @Operation(summary = "Buscar servidor temporário por ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Servidor encontrado"),
@@ -60,6 +65,7 @@ public class ServidorTemporarioController {
     }
     
     @PutMapping("/{id}")
+    @Path("/alterar")
     @Operation(summary = "Atualizar servidor temporário")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Servidor atualizado com sucesso"),
@@ -75,6 +81,7 @@ public class ServidorTemporarioController {
     }
 
     @DeleteMapping("/{id}")
+    @Path("/excluir")
     @Operation(summary = "Excluir servidor temporário")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Servidor excluído com sucesso"),

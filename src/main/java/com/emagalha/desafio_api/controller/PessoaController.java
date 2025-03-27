@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+
+import org.simpleframework.xml.Path;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -19,7 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/pessoas")
-@Tag(name = "1. Pessoa", description = "API para gerenciamento de pessoas")
+@Tag(name = "1.Pessoa", description = "API para gerenciamento de pessoas")
 public class PessoaController {
 
     private final PessoaService pessoaService;
@@ -29,6 +31,7 @@ public class PessoaController {
     }
 
     @PostMapping
+    @Path("/incluir")
     @Operation(summary = "Criar uma nova pessoa")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Pessoa criada com sucesso"),
@@ -45,6 +48,7 @@ public class PessoaController {
     }
 
     @GetMapping("/{id}")
+    @Path("/listar")
     @Operation(summary = "Obter uma pessoa pelo ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Pessoa encontrada"),
@@ -55,6 +59,7 @@ public class PessoaController {
     }
 
     @GetMapping
+    @Path("/listar-todos")
     @Operation(summary = "Listar todas as pessoas")
     @ApiResponse(responseCode = "200", description = "Lista de pessoas")
     public ResponseEntity<List<PessoaListDTO>> getAll() {
@@ -62,6 +67,7 @@ public class PessoaController {
     }
 
     @PutMapping("/{id}")
+    @Path("/alterar")
     @Operation(summary = "Atualiza uma pessoa existente")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Pessoa atualizada com sucesso"),
@@ -77,6 +83,7 @@ public class PessoaController {
     }
 
     @DeleteMapping("/{id}")
+    @Path("/excluir")
     @Operation(summary = "Excluir uma pessoa")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Pessoa excluída com sucesso"),

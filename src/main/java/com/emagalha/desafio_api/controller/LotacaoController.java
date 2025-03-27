@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+
+import org.simpleframework.xml.Path;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -17,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/lotacoes")
-@Tag(name = "4. Lotacao", description = "API para gerenciamento de lotações")
+@Tag(name = "4.Lotacao", description = "API para gerenciamento de lotações")
 public class LotacaoController {
 
     private final LotacaoService service;
@@ -27,6 +29,7 @@ public class LotacaoController {
     }
 
     @PostMapping
+    @Path("/incluir")
     @Operation(summary = "Criar uma nova lotação")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Lotação criada com sucesso"),
@@ -43,18 +46,21 @@ public class LotacaoController {
     }
 
     @GetMapping("/{id}")
+    @Path("/listar")
     @Operation(summary = "Buscar lotação por ID")
     public ResponseEntity<LotacaoListDTO> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping
+    @Path("/listar-todos")
     @Operation(summary = "Listar todas as lotações")
     public ResponseEntity<List<LotacaoListDTO>> getAll() {
         return ResponseEntity.ok(service.findAll());
     }
 
     @PutMapping("/{id}")
+    @Path("/alterar")
     @Operation(summary = "Atualizar lotação existente")
     public ResponseEntity<LotacaoDTO> update(
         @PathVariable Integer id,
@@ -64,6 +70,7 @@ public class LotacaoController {
     }
 
     @DeleteMapping("/{id}")
+    @Path("/excluir")
     @Operation(summary = "Excluir lotação")
     @ApiResponse(responseCode = "204", description = "Lotação excluída com sucesso")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
