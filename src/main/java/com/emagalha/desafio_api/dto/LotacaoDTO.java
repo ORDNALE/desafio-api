@@ -1,6 +1,7 @@
 package com.emagalha.desafio_api.dto;
 
 import com.emagalha.desafio_api.entity.Lotacao;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -25,8 +26,10 @@ public class LotacaoDTO {
     private Integer unidadeId;
 
     @NotNull(message = "Data de lotação é obrigatória")
+    
     private LocalDate dataLotacao;
-
+    
+    
     private LocalDate dataRemocao;
 
     @Size(max = 100, message = "Portaria deve ter no máximo 100 caracteres")

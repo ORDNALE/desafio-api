@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,6 +32,7 @@ public class Pessoa implements Serializable {
     private String nome;
     
     @Column(name = "pes_data_nascimento")
+    
     private LocalDate dataNascimento;
     
     @Column(name = "pes_sexo", length = 9)

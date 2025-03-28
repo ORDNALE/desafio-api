@@ -4,12 +4,12 @@ import com.emagalha.desafio_api.dto.LotacaoDTO;
 import com.emagalha.desafio_api.dto.LotacaoListDTO;
 import com.emagalha.desafio_api.service.LotacaoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
-import org.simpleframework.xml.Path;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -19,7 +19,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/lotacoes")
-@Tag(name = "4.Lotacao", description = "API para gerenciamento de lotações")
+@Tag(
+    name = "05 - lotações",
+    description = "API para gerenciamento de lotações",
+    extensions = @Extension(
+        name = "x-order", 
+        properties = @ExtensionProperty(name = "order", value = "05")
+    )
+)
 public class LotacaoController {
 
     private final LotacaoService service;
@@ -28,8 +35,7 @@ public class LotacaoController {
         this.service = service;
     }
 
-    @PostMapping
-    @Path("/incluir")
+    @PostMapping("/incluir")
     @Operation(summary = "Criar uma nova lotação")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Lotação criada com sucesso"),
@@ -45,22 +51,19 @@ public class LotacaoController {
         return ResponseEntity.created(location).body(saved);
     }
 
-    @GetMapping("/{id}")
-    @Path("/listar")
+    @GetMapping("/listar/{id}")
     @Operation(summary = "Buscar lotação por ID")
     public ResponseEntity<LotacaoListDTO> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
-    @GetMapping
-    @Path("/listar-todos")
+    @GetMapping("/listar-todos")
     @Operation(summary = "Listar todas as lotações")
     public ResponseEntity<List<LotacaoListDTO>> getAll() {
         return ResponseEntity.ok(service.findAll());
     }
 
-    @PutMapping("/{id}")
-    @Path("/alterar")
+    @PutMapping("/alterar/{id}")
     @Operation(summary = "Atualizar lotação existente")
     public ResponseEntity<LotacaoDTO> update(
         @PathVariable Integer id,
@@ -69,8 +72,7 @@ public class LotacaoController {
         return ResponseEntity.ok(service.update(id, dto));
     }
 
-    @DeleteMapping("/{id}")
-    @Path("/excluir")
+    @DeleteMapping("/excluir/{id}")
     @Operation(summary = "Excluir lotação")
     @ApiResponse(responseCode = "204", description = "Lotação excluída com sucesso")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {

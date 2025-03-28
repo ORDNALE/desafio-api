@@ -1,6 +1,7 @@
 package com.emagalha.desafio_api.dto;
 
 import com.emagalha.desafio_api.entity.Pessoa;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -20,6 +21,7 @@ public class PessoaDTO {
     private String nome;
 
     @NotNull(message = "Data de nascimento é obrigatória")
+    
     private LocalDate dataNascimento;
 
     @NotBlank(message = "Sexo é obrigatório")

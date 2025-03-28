@@ -3,6 +3,7 @@ package com.emagalha.desafio_api.dto;
 import java.time.LocalDate;
 
 import com.emagalha.desafio_api.entity.Lotacao;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,6 +16,7 @@ public class LotacaoListDTO {
     private Integer id;
     private Integer pessoaId;
     private Integer unidadeId;
+    
     private LocalDate dataLotacao;
     private String portaria;
 

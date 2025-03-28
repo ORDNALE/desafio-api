@@ -6,14 +6,14 @@ import com.emagalha.desafio_api.entity.Pessoa;
 import com.emagalha.desafio_api.service.PessoaService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
-import org.simpleframework.xml.Path;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -23,7 +23,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/pessoas")
-@Tag(name = "1.Pessoa", description = "API para gerenciamento de pessoas")
+@Tag(
+    name = "01 - Pessoa",
+    description = "API para gerenciamento de pessoas",
+    extensions = @Extension(
+        name = "x-order", 
+        properties = @ExtensionProperty(name = "order", value = "1")
+    )
+)
 public class PessoaController {
 
     private final PessoaService pessoaService;
@@ -32,8 +39,7 @@ public class PessoaController {
         this.pessoaService = pessoaService;
     }
 
-    @PostMapping
-    @Path("/incluir")
+    @PostMapping("/incluir")
     @Operation(summary = "Criar uma nova pessoa")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Pessoa criada com sucesso"),
@@ -49,8 +55,7 @@ public class PessoaController {
         return ResponseEntity.created(location).body(savedPessoa);
     }
 
-    @GetMapping("/{id}")
-    @Path("/listar")
+    @GetMapping("/listar/{id}")
     @Operation(summary = "Obter uma pessoa pelo ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Pessoa encontrada"),
@@ -60,16 +65,14 @@ public class PessoaController {
         return ResponseEntity.ok(pessoaService.findById(id));
     }
 
-    @GetMapping
-    @Path("/listar-todos")
+    @GetMapping("/listar-todos")
     @Operation(summary = "Listar todas as pessoas")
     @ApiResponse(responseCode = "200", description = "Lista de pessoas")
     public ResponseEntity<List<PessoaListDTO>> getAll() {
         return ResponseEntity.ok(pessoaService.findAll());
     }
 
-    @PutMapping("/{id}")
-    @Path("/alterar")
+    @PutMapping("/alterar/{id}")
     @Operation(summary = "Atualiza uma pessoa existente")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Pessoa atualizada com sucesso"),
@@ -84,8 +87,7 @@ public class PessoaController {
         return ResponseEntity.ok(updatedPessoa);
     }
 
-    @DeleteMapping("/{id}")
-    @Path("/excluir")
+    @DeleteMapping("/excluir/{id}")
     @Operation(summary = "Excluir pessoa")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Pessoa excluída com sucesso"),

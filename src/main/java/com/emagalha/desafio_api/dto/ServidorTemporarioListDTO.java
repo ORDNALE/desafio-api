@@ -7,13 +7,16 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 import com.emagalha.desafio_api.entity.ServidorTemporario;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServidorTemporarioListDTO {
     private Integer id;
+    
     private LocalDate dataAdmissao;
+    
     private LocalDate dataDemissao;
     private Integer pessoaId;
 

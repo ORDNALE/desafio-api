@@ -1,6 +1,7 @@
 package com.emagalha.desafio_api.dto;
 
 import com.emagalha.desafio_api.entity.ServidorTemporario;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -18,8 +19,10 @@ public class ServidorTemporarioDTO {
     private Integer id;
 
     @NotNull(message = "Data de admissão é obrigatória")
+    
     private LocalDate dataAdmissao;
 
+        
     private LocalDate dataDemissao;
 
     @NotNull(message = "ID da pessoa é obrigatório")

@@ -4,6 +4,8 @@ import com.emagalha.desafio_api.dto.UnidadeDTO;
 import com.emagalha.desafio_api.dto.UnidadeListDTO;
 import com.emagalha.desafio_api.service.UnidadeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +21,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/unidades")
-@Tag(name = "5.Unidade", description = "API para gerenciamento de unidades")
+@Tag(
+    name = "04 - unidades",
+    description = "API para gereciamento de unidades",
+    extensions = @Extension(
+        name = "x-order", 
+        properties = @ExtensionProperty(name = "order", value = "4")
+    )
+)
 public class UnidadeController {
 
     private final UnidadeService service;
@@ -28,8 +37,7 @@ public class UnidadeController {
         this.service = service;
     }
 
-    @PostMapping
-    @Path("/incluir")
+    @PostMapping("/incluir")
     @Operation(summary = "Criar uma nova unidade")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Unidade criada com sucesso"),
@@ -44,8 +52,7 @@ public class UnidadeController {
         return ResponseEntity.created(location).body(saved);
     }
 
-    @GetMapping("/{id}")
-    @Path("/listar")
+    @GetMapping("/listar/{id}")
     @Operation(summary = "Buscar unidade por ID")
     public ResponseEntity<UnidadeListDTO> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(service.findById(id));
@@ -58,7 +65,7 @@ public class UnidadeController {
     return ResponseEntity.ok(service.findAll());
 }
 
-    @PutMapping("/{id}")
+    @PutMapping("/alterar/{id}")
     @Operation(summary = "Atualizar unidade existente")
     public ResponseEntity<UnidadeDTO> update(
         @PathVariable Integer id,
@@ -67,8 +74,7 @@ public class UnidadeController {
         return ResponseEntity.ok(service.update(id, dto));
     }
 
-    @DeleteMapping("/{id}")
-    @Path("/excluir")
+    @DeleteMapping("/excluir/{id}")
     @Operation(summary = "Excluir unidade")
     @ApiResponse(responseCode = "204", description = "Unidade excluída com sucesso")
     public ResponseEntity<String> deleteUnidade(@PathVariable Integer id) {

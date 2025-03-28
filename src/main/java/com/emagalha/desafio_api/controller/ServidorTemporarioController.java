@@ -4,12 +4,12 @@ import com.emagalha.desafio_api.dto.ServidorTemporarioDTO;
 import com.emagalha.desafio_api.dto.ServidorTemporarioListDTO;
 import com.emagalha.desafio_api.service.ServidorTemporarioService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
-import org.simpleframework.xml.Path;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -19,7 +19,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/servidores-temporarios")
-@Tag(name = "3.Servidor Temporário", description = "API para gerenciamento de servidores temporários")
+@Tag(
+    name = "03- Servidor temporários",
+    description = "API para servidores temporários",
+    extensions = @Extension(
+        name = "x-order", 
+        properties = @ExtensionProperty(name = "order", value = "3")
+    )
+)
 public class ServidorTemporarioController {
 
     private final ServidorTemporarioService service;
@@ -28,8 +35,7 @@ public class ServidorTemporarioController {
         this.service = service;
     }
 
-    @PostMapping
-    @Path("/incluir")
+    @PostMapping("/incluir")
     @Operation(summary = "Criar um novo servidor temporário")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Servidor criado com sucesso"),
@@ -45,16 +51,14 @@ public class ServidorTemporarioController {
         return ResponseEntity.created(location).body(saved);
     }
 
-    @GetMapping
-    @Path("/listar-todos")
+    @GetMapping("/listar-todos")
     @Operation(summary = "Listar todos os servidores temporários")
     @ApiResponse(responseCode = "200", description = "Lista de servidores temporários")
     public ResponseEntity<List<ServidorTemporarioListDTO>> getAll() {
         return ResponseEntity.ok(service.findAll());
     }
 
-    @GetMapping("/{id}")
-    @Path("/listar")
+    @GetMapping("listar/{id}")
     @Operation(summary = "Buscar servidor temporário por ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Servidor encontrado"),
@@ -64,8 +68,7 @@ public class ServidorTemporarioController {
         return ResponseEntity.ok(service.findById(id));
     }
     
-    @PutMapping("/{id}")
-    @Path("/alterar")
+    @PutMapping("alterar/{id}")
     @Operation(summary = "Atualizar servidor temporário")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Servidor atualizado com sucesso"),
@@ -80,8 +83,7 @@ public class ServidorTemporarioController {
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/{id}")
-    @Path("/excluir")
+    @DeleteMapping("/excluir/{id}")
     @Operation(summary = "Excluir servidor temporário")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Servidor excluído com sucesso"),

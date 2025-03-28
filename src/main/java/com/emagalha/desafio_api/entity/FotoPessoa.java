@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,6 +31,7 @@ public class FotoPessoa implements Serializable {
     private Pessoa pessoa;
     
     @Column(name = "fp_data")
+    
     private LocalDate data;
     
     @Column(name = "fp_bucket", length = 50)

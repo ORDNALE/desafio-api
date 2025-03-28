@@ -75,7 +75,7 @@ public class UnidadeService {
         Unidade unidade = unidadeRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada"));
         
-        long lotacoesAtivas = lotacaoRepository.countByUnidadeId(id);
+        Integer lotacoesAtivas = lotacaoRepository.countByUnidadeId(id);
         if (lotacoesAtivas > 0) {
             throw new BusinessException("Não é possível excluir: unidade vinculada a " + lotacoesAtivas + " lotação(ões)");
         }

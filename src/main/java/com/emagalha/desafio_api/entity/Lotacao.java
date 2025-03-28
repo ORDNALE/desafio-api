@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @Data
 @Entity
 @Table(name = "lotacao")
@@ -26,17 +28,15 @@ public class Lotacao implements Serializable {
     private Unidade unidade;
     
     @Column(name = "lot_data_lotacao")
+    
     private LocalDate dataLotacao;
     
     @Column(name = "lot_data_remocao")
+    
     private LocalDate dataRemocao;
     
     @Column(name = "lot_portaria", length = 100)
     private String portaria;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pes_id", referencedColumnName = "pes_id", insertable = false, updatable = false)
-    private ServidorEfetivo servidorEfetivo;
 
     @Override
     public String toString() {
