@@ -1,8 +1,12 @@
 package com.emagalha.desafio_api.service;
 
+import java.util.ArrayList;
 import java.util.List;
-import org.springframework.dao.DataIntegrityViolationException;
+import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.emagalha.desafio_api.dto.PessoaDTO;
 import com.emagalha.desafio_api.dto.PessoaListDTO;
@@ -11,8 +15,8 @@ import com.emagalha.desafio_api.exception.BusinessException;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.repository.LotacaoRepository;
 import com.emagalha.desafio_api.repository.PessoaRepository;
-
-import jakarta.transaction.Transactional;
+import com.emagalha.desafio_api.repository.ServidorEfetivoRepository;
+import com.emagalha.desafio_api.repository.ServidorTemporarioRepository;
 
 @Service
 @Transactional
@@ -20,17 +24,22 @@ public class PessoaService {
 
     private final PessoaRepository pessoaRepository;
     private final LotacaoRepository lotacaoRepository;
+    private final ServidorEfetivoRepository servidorEfetivoRepository;
+    private final ServidorTemporarioRepository servidorTemporarioRepository;
 
-    public PessoaService(PessoaRepository pessoaRepository, LotacaoRepository lotacaoRepository) {
-        this.lotacaoRepository = lotacaoRepository;
+    public PessoaService(PessoaRepository pessoaRepository,
+                       LotacaoRepository lotacaoRepository,
+                       ServidorEfetivoRepository servidorEfetivoRepository,
+                       ServidorTemporarioRepository servidorTemporarioRepository) {
         this.pessoaRepository = pessoaRepository;
+        this.lotacaoRepository = lotacaoRepository;
+        this.servidorEfetivoRepository = servidorEfetivoRepository;
+        this.servidorTemporarioRepository = servidorTemporarioRepository;
     }
 
     @Transactional
     public PessoaDTO save(PessoaDTO pessoaDTO) {
-        if (pessoaDTO.getNome() == null || pessoaDTO.getNome().trim().isEmpty()) {
-            throw new BusinessException("Nome da pessoa é obrigatório");
-        }
+        validatePessoaData(pessoaDTO);
 
         Pessoa pessoa = new Pessoa();
         pessoa.setNome(pessoaDTO.getNome());
@@ -39,58 +48,79 @@ public class PessoaService {
         pessoa.setMae(pessoaDTO.getMae());
         pessoa.setPai(pessoaDTO.getPai());
 
-        try {
-            Pessoa savedEntity = pessoaRepository.save(pessoa);
-            return PessoaDTO.fromEntity(savedEntity);
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Erro de integridade ao salvar pessoa: " + e.getRootCause().getMessage());
-        } catch (Exception e) {
-            throw new BusinessException("Erro inesperado ao salvar pessoa: " + e.getMessage());
-        }
+        Pessoa savedEntity = pessoaRepository.save(pessoa);
+        return PessoaDTO.fromEntity(savedEntity);
     }
 
-    public Pessoa findById(Integer id) {
+    @Transactional(readOnly = true)
+    public Optional<PessoaDTO> findById(Integer id) {
         return pessoaRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + id));
+                .map(PessoaDTO::fromEntity);
     }
 
-    public List<PessoaListDTO> findAll() {
-    return pessoaRepository.findAll().stream()
-        .map(p -> new PessoaListDTO(
-            p.getId(),
-            p.getNome(),
-            p.getDataNascimento()
-        ))
-        .toList();
+    @Transactional(readOnly = true)
+    public Page<PessoaListDTO> findAll(Pageable pageable) {
+        return pessoaRepository.findAll(pageable)
+                .map(p -> new PessoaListDTO(
+                        p.getId(),
+                        p.getNome(),
+                        p.getDataNascimento()
+                ));
     }
 
     @Transactional
     public PessoaDTO update(Integer id, PessoaDTO pessoaDTO) {
-        try {
-            Pessoa existingPessoa = pessoaRepository.findById(id)
+        Pessoa existingPessoa = pessoaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + id));
-            
-            existingPessoa.setNome(pessoaDTO.getNome());
-            existingPessoa.setDataNascimento(pessoaDTO.getDataNascimento());
-            existingPessoa.setSexo(pessoaDTO.getSexo());
-            existingPessoa.setMae(pessoaDTO.getMae());
-            existingPessoa.setPai(pessoaDTO.getPai());
-            
-            Pessoa updatedPessoa = pessoaRepository.save(existingPessoa);
-            return PessoaDTO.fromEntity(updatedPessoa);
-            
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Erro ao atualizar pessoa: " + e.getRootCause().getMessage());
+
+        validatePessoaData(pessoaDTO);
+
+        existingPessoa.setNome(pessoaDTO.getNome());
+        existingPessoa.setDataNascimento(pessoaDTO.getDataNascimento());
+        existingPessoa.setSexo(pessoaDTO.getSexo());
+        existingPessoa.setMae(pessoaDTO.getMae());
+        existingPessoa.setPai(pessoaDTO.getPai());
+
+        return PessoaDTO.fromEntity(pessoaRepository.save(existingPessoa));
+    }
+
+    @Transactional
+    public void delete(Integer id) {
+        Pessoa pessoa = pessoaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + id));
+
+        validateDeletionConstraints(pessoa);
+
+        pessoaRepository.delete(pessoa);
+    }
+
+    private void validatePessoaData(PessoaDTO pessoaDTO) {
+        if (pessoaDTO.getNome() == null || pessoaDTO.getNome().trim().isEmpty()) {
+            throw new BusinessException("Nome da pessoa é obrigatório");
         }
     }
 
-    public String delete(Integer id) {
-        Pessoa pessoa = findById(id);
-        try {
-            pessoaRepository.delete(pessoa);
-            return "Pessoa (ID: " + id + ") excluído com sucesso.";
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Não é possível excluir a pessoa pois está sendo referenciada por outros registros");
+    private void validateDeletionConstraints(Pessoa pessoa) {
+        List<String> constraints = new ArrayList<>();
+
+        if (!pessoa.getFotos().isEmpty()) {
+            constraints.add(pessoa.getFotos().size() + " foto(s)");
+        }
+
+        if (lotacaoRepository.existsByPessoaId(pessoa.getId())) {
+            constraints.add("lotação(ões)");
+        }
+
+        if (servidorEfetivoRepository.existsById(pessoa.getId())) {
+            constraints.add("servidor efetivo");
+        }
+
+        if (servidorTemporarioRepository.existsById(pessoa.getId())) {
+            constraints.add("servidor temporário");
+        }
+
+        if (!constraints.isEmpty()) {
+            throw new BusinessException("Não é possível excluir: pessoa vinculada a " + String.join(", ", constraints));
         }
     }
 
@@ -99,35 +129,35 @@ public class PessoaService {
         Pessoa pessoa = pessoaRepository.findById(pessoaId)
             .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + pessoaId));
         
-        StringBuilder bloqueios = new StringBuilder();
+        // Lista para armazenar todos os vínculos encontrados
+        List<String> vinculos = new ArrayList<>();
         
         // 1. Verifica Fotos (relacionamento OneToMany)
         if (!pessoa.getFotos().isEmpty()) {
-            bloqueios.append(pessoa.getFotos().size()).append(" foto(s)");
+            vinculos.add(pessoa.getFotos().size() + " foto(s)");
         }
         
-        // 2. Verifica Lotação (via repository)
-        Integer lotacoesCount = lotacaoRepository.countByPessoaId(pessoaId);
+        // 2. Verifica Lotação (via repository - mais eficiente que carregar a coleção)
+        long lotacoesCount = lotacaoRepository.countByPessoaId(pessoaId);
         if (lotacoesCount > 0) {
-            if (bloqueios.length() > 0) bloqueios.append(", ");
-            bloqueios.append(lotacoesCount).append(" lotação(ões)");
+            vinculos.add(lotacoesCount + " lotação(ões)");
         }
         
         // 3. Verifica Servidor Efetivo (relacionamento OneToOne)
-        if (pessoa.getServidorEfetivo() != null) {
-            if (bloqueios.length() > 0) bloqueios.append(", ");
-            bloqueios.append("1 servidor efetivo");
+        if (servidorEfetivoRepository.existsById(pessoaId)) {
+            vinculos.add("servidor efetivo");
         }
         
         // 4. Verifica Servidor Temporário (relacionamento OneToOne)
-        if (pessoa.getServidorTemporario() != null) {
-            if (bloqueios.length() > 0) bloqueios.append(", ");
-            bloqueios.append("1 servidor temporário");
+        if (servidorTemporarioRepository.existsById(pessoaId)) {
+            vinculos.add("servidor temporário");
         }
         
-        // Se houver qualquer vínculo, lança exceção
-        if (bloqueios.length() > 0) {
-            throw new BusinessException("Não é possível excluir: pessoa vinculada a " + bloqueios.toString());
+        // Se houver qualquer vínculo, lança exceção com a lista formatada
+        if (!vinculos.isEmpty()) {
+            String mensagemErro = "Não é possível excluir: pessoa vinculada a " + 
+                String.join(", ", vinculos);
+            throw new BusinessException(mensagemErro);
         }
         
         pessoaRepository.delete(pessoa);

@@ -7,80 +7,81 @@ import com.emagalha.desafio_api.exception.BusinessException;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.repository.LotacaoRepository;
 import com.emagalha.desafio_api.repository.UnidadeRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Optional;
 
 @Service
-@Transactional
 public class UnidadeService {
 
     private final UnidadeRepository unidadeRepository;
     private final LotacaoRepository lotacaoRepository;
 
-    public UnidadeService(UnidadeRepository unidadeRepository, LotacaoRepository lotacaoRepository) {
-        this.lotacaoRepository = lotacaoRepository;
+    public UnidadeService(UnidadeRepository unidadeRepository, 
+                         LotacaoRepository lotacaoRepository) {
         this.unidadeRepository = unidadeRepository;
+        this.lotacaoRepository = lotacaoRepository;
     }
 
+    @Transactional
     public UnidadeDTO save(UnidadeDTO dto) {
+        validarSiglaUnica(dto.getSigla());
+        
         Unidade unidade = dto.toEntity();
-
-        try {
-            Unidade saved = unidadeRepository.save(unidade);
-            return UnidadeDTO.fromEntity(saved);
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Erro ao salvar unidade: " + e.getRootCause().getMessage());
-        }
+        Unidade saved = unidadeRepository.save(unidade);
+        return UnidadeDTO.fromEntity(saved);
     }
 
-    public List<UnidadeListDTO> findAll() {
-        return unidadeRepository.findAll()
-            .stream()
-            .map(UnidadeListDTO::fromEntity)
-            .toList();
+    @Transactional(readOnly = true)
+    public Page<UnidadeListDTO> findAll(Pageable pageable) {
+        return unidadeRepository.findAll(pageable)
+                .map(UnidadeListDTO::fromEntity);
     }
 
-    public UnidadeListDTO findById(Integer id) {
-        Unidade unidade = unidadeRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada"));
-        return UnidadeListDTO.fromEntity(unidade);
+    @Transactional(readOnly = true)
+    public Optional<UnidadeListDTO> findById(Integer id) {
+        return unidadeRepository.findById(id)
+                .map(UnidadeListDTO::fromEntity);
     }
 
+    @Transactional
     public UnidadeDTO update(Integer id, UnidadeDTO dto) {
         Unidade existingUnidade = unidadeRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada com ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada com ID: " + id));
+
+        if (!existingUnidade.getSigla().equals(dto.getSigla())) {
+            validarSiglaUnica(dto.getSigla());
+        }
 
         existingUnidade.setNome(dto.getNome());
         existingUnidade.setSigla(dto.getSigla());
 
-        Unidade updated = unidadeRepository.save(existingUnidade);
-        return UnidadeDTO.fromEntity(updated);
+        return UnidadeDTO.fromEntity(unidadeRepository.save(existingUnidade));
     }
 
-    public String delete(Integer id) {
-        Unidade unidade = unidadeRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada com ID: " + id));
-        try {
-            unidadeRepository.delete(unidade);
-            return "Unidade (ID: " + id + ") excluído com sucesso.";
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Não é possível excluir a unidade pois está vinculada a lotações.");
+    @Transactional
+    public void delete(Integer id) {
+        if (!unidadeRepository.existsById(id)) {
+            throw new EntityNotFoundException("Unidade não encontrada com ID: " + id);
         }
+        
+        if (lotacaoRepository.existsByUnidadeId(id)) {
+            throw new BusinessException("Não é possível excluir: unidade possui lotações vinculadas");
+        }
+        
+        unidadeRepository.deleteById(id);
     }
 
-    public String deleteComVerificacao(Integer id) {
-        Unidade unidade = unidadeRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada"));
-        
-        Integer lotacoesAtivas = lotacaoRepository.countByUnidadeId(id);
-        if (lotacoesAtivas > 0) {
-            throw new BusinessException("Não é possível excluir: unidade vinculada a " + lotacoesAtivas + " lotação(ões)");
+    private void validarSiglaUnica(String sigla) {
+        if (sigla == null || sigla.isBlank()) {
+            throw new BusinessException("Sigla não pode ser vazia");
         }
         
-        unidadeRepository.delete(unidade);
-        return "Unidade (ID: " + id + ") excluída com sucesso.";
+        if (unidadeRepository.existsBySiglaIgnoreCase(sigla.trim())) {
+            throw new BusinessException("Já existe uma unidade com a sigla: " + sigla);
+        }
     }
 }

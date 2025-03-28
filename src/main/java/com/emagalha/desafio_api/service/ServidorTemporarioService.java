@@ -10,12 +10,16 @@ import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.repository.LotacaoRepository;
 import com.emagalha.desafio_api.repository.PessoaRepository;
 import com.emagalha.desafio_api.repository.ServidorTemporarioRepository;
-import jakarta.transaction.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -34,68 +38,71 @@ public class ServidorTemporarioService {
         this.lotacaoRepository = lotacaoRepository;
     }
 
+    @Transactional
     public ServidorTemporarioDTO save(ServidorTemporarioDTO dto) {
         Pessoa pessoa = pessoaRepository.findById(dto.getPessoaId())
             .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + dto.getPessoaId()));
 
-        // Valida se a pessoa já é servidor efetivo ou temporário
         if (pessoa.getServidorEfetivo() != null || pessoa.getServidorTemporario() != null) {
             throw new BusinessException("Esta pessoa já está vinculada a outro tipo de servidor");
         }
 
+        validarDatasContrato(dto.getDataAdmissao(), dto.getDataDemissao());
+
         ServidorTemporario servidor = dto.toEntity();
         servidor.setPessoa(pessoa);
 
-        try {
-            ServidorTemporario saved = servidorRepository.save(servidor);
-            return ServidorTemporarioDTO.fromEntity(saved);
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Erro ao salvar servidor temporário: " + e.getRootCause().getMessage());
-        }
+        ServidorTemporario saved = servidorRepository.save(servidor);
+        return ServidorTemporarioDTO.fromEntity(saved);
     }
 
-    public List<ServidorTemporarioListDTO> findAll() {
-        return servidorRepository.findAll().stream()
-            .map(ServidorTemporarioListDTO::fromEntity)
-            .toList();
+    @Transactional(readOnly = true)
+    public Page<ServidorTemporarioListDTO> findAll(Pageable pageable) {
+        return servidorRepository.findAll(pageable)
+            .map(ServidorTemporarioListDTO::fromEntity);
     }
 
-    public ServidorTemporarioListDTO findById(Integer id) {
-        ServidorTemporario servidor = servidorRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Servidor temporário não encontrado"));
-        return ServidorTemporarioListDTO.fromEntity(servidor);
+    @Transactional(readOnly = true)
+    public Optional<ServidorTemporarioListDTO> findById(Integer id) {
+        return servidorRepository.findById(id)
+            .map(servidor -> {
+                ServidorTemporarioListDTO dto = ServidorTemporarioListDTO.fromEntity(servidor);
+                return dto;
+            });
     }
 
+    @Transactional
     public ServidorTemporarioDTO update(Integer id, ServidorTemporarioDTO dto) {
         ServidorTemporario servidor = servidorRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Servidor temporário não encontrado com ID: " + id));
     
-        // Atualiza apenas campos permitidos
+        validarDatasContrato(dto.getDataAdmissao(), dto.getDataDemissao());
+    
         servidor.setDataAdmissao(dto.getDataAdmissao());
         servidor.setDataDemissao(dto.getDataDemissao());
     
-        ServidorTemporario updated = servidorRepository.save(servidor);
-        return ServidorTemporarioDTO.fromEntity(updated);
+        return ServidorTemporarioDTO.fromEntity(servidorRepository.save(servidor));
     }
     
     @Transactional
-    public String delete(Integer id) {
+    public void delete(Integer id) {
         ServidorTemporario servidor = servidorRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Servidor temporário não encontrado com ID: " + id));
 
-        // Verifica se há lotações vinculadas ao ID da PESSOA (não ao servidor temporário diretamente)
-        List<Lotacao> lotacoes = lotacaoRepository.findByPessoaId(servidor.getPessoa().getId());
-        if (!lotacoes.isEmpty()) {
-            throw new BusinessException("Não é possível excluir: servidor vinculado a " + lotacoes.size() + " lotação(ões).");
+        if (lotacaoRepository.existsByPessoaId(servidor.getPessoa().getId())) {
+            throw new BusinessException("Não é possível excluir: servidor vinculado a lotações ativas");
         }
 
-        try {
-            servidorRepository.delete(servidor);
-            return "Servidor temporário (ID: " + id + ") excluído com sucesso.";
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Erro de integridade ao excluir servidor: " + e.getRootCause().getMessage());
-        }
+        servidorRepository.delete(servidor);
     }
 
-    
+    private void validarDatasContrato(LocalDate dataAdmissao, LocalDate dataDemissao) {
+        if (dataAdmissao == null) {
+            throw new BusinessException("Data de admissão é obrigatória");
+        }
+        
+        if (dataDemissao != null && dataDemissao.isBefore(dataAdmissao)) {
+            throw new BusinessException("Data de demissão não pode ser anterior à data de admissão");
+        }
+    }
 }

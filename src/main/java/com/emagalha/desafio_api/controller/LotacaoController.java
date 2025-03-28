@@ -10,6 +10,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -54,13 +57,17 @@ public class LotacaoController {
     @GetMapping("/listar/{id}")
     @Operation(summary = "Buscar lotação por ID")
     public ResponseEntity<LotacaoListDTO> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.findById(id));
+        return service.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/listar-todos")
     @Operation(summary = "Listar todas as lotações")
-    public ResponseEntity<List<LotacaoListDTO>> getAll() {
-        return ResponseEntity.ok(service.findAll());
+    public ResponseEntity<List<LotacaoListDTO>> getAll(@RequestParam(defaultValue = "0") int page, 
+                                                       @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(service.findAll(pageable).getContent());
     }
 
     @PutMapping("/alterar/{id}")

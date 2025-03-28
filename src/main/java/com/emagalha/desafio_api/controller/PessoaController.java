@@ -14,6 +14,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -62,14 +65,20 @@ public class PessoaController {
         @ApiResponse(responseCode = "404", description = "Pessoa não encontrada")
     })
     public ResponseEntity<Pessoa> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(pessoaService.findById(id));
+        return pessoaService.findById(id)
+                .map(pessoaDTO -> ResponseEntity.ok(pessoaDTO.toEntity()))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/listar-todos")
     @Operation(summary = "Listar todas as pessoas")
     @ApiResponse(responseCode = "200", description = "Lista de pessoas")
-    public ResponseEntity<List<PessoaListDTO>> getAll() {
-        return ResponseEntity.ok(pessoaService.findAll());
+    public ResponseEntity<List<PessoaListDTO>> getAll(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(pessoaService.findAll(pageable).getContent());
     }
 
     @PutMapping("/alterar/{id}")

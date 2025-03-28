@@ -9,4 +9,7 @@ import java.util.Optional;
 @Repository
 public interface UnidadeRepository extends JpaRepository<Unidade, Integer> {
     Optional<Unidade> findByNomeAndSigla(String nome, String sigla);
+    boolean existsBySigla(String sigla);
+    boolean existsBySiglaIgnoreCase(String sigla);
+
 }

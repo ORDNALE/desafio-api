@@ -2,7 +2,6 @@ package com.emagalha.desafio_api.service;
 
 import com.emagalha.desafio_api.dto.ServidorEfetivoDTO;
 import com.emagalha.desafio_api.dto.ServidorEfetivoListDTO;
-import com.emagalha.desafio_api.entity.Lotacao;
 import com.emagalha.desafio_api.entity.Pessoa;
 import com.emagalha.desafio_api.entity.ServidorEfetivo;
 import com.emagalha.desafio_api.exception.BusinessException;
@@ -10,11 +9,12 @@ import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.repository.PessoaRepository;
 import com.emagalha.desafio_api.repository.ServidorEfetivoRepository;
 import com.emagalha.desafio_api.repository.LotacaoRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
-import org.springframework.dao.DataIntegrityViolationException;
+import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -50,30 +50,31 @@ public class ServidorEfetivoService {
         ServidorEfetivo servidor = dto.toEntity();
         servidor.setPessoa(pessoa);
 
-        try {
-            ServidorEfetivo saved = servidorRepository.save(servidor);
-            return ServidorEfetivoDTO.fromEntity(saved);
-        } catch (DataIntegrityViolationException e) {
-            // Captura qualquer outro erro de integridade não tratado acima
-            throw new BusinessException("Erro ao salvar servidor: " + e.getRootCause().getMessage());
-        }
+        ServidorEfetivo saved = servidorRepository.save(servidor);
+        return ServidorEfetivoDTO.fromEntity(saved);
     }
 
-    public List<ServidorEfetivoListDTO> findAll() {
-        return servidorRepository.findAll().stream()
-            .map(ServidorEfetivoListDTO::fromEntity)
-            .toList();
+    @Transactional(readOnly = true)
+    public Page<ServidorEfetivoListDTO> findAll(Pageable pageable) {
+        return servidorRepository.findAll(pageable)
+            .map(ServidorEfetivoListDTO::fromEntity);
     }
 
-    public ServidorEfetivoListDTO findById(Integer id) {
-        ServidorEfetivo servidor = servidorRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Servidor efetivo não encontrado"));
-        return ServidorEfetivoListDTO.fromEntity(servidor);
+    @Transactional(readOnly = true)
+    public Optional<ServidorEfetivoListDTO> findById(Integer id) {
+        return servidorRepository.findById(id)
+            .map(ServidorEfetivoListDTO::fromEntity);
     }
 
+    @Transactional
     public ServidorEfetivoDTO update(Integer id, ServidorEfetivoDTO dto) {
         ServidorEfetivo servidor = servidorRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Servidor efetivo não encontrado com ID: " + id));
+    
+        if (!servidor.getMatricula().equals(dto.getMatricula()) && 
+            servidorRepository.existsByMatricula(dto.getMatricula())) {
+            throw new BusinessException("Matrícula '" + dto.getMatricula() + "' já está em uso");
+        }
     
         servidor.setMatricula(dto.getMatricula());
     
@@ -81,21 +82,15 @@ public class ServidorEfetivoService {
         return ServidorEfetivoDTO.fromEntity(updated);
     }
     
-    public String delete(Integer id) {
+    @Transactional
+    public void delete(Integer id) {
         ServidorEfetivo servidor = servidorRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Servidor efetivo não encontrado com ID: " + id));
         
-        // Verifica lotações pelo ID da pessoa
-        List<Lotacao> lotacoes = lotacaoRepository.findByPessoaId(servidor.getPessoa().getId());
-        if (!lotacoes.isEmpty()) {
-            throw new BusinessException("Não é possível excluir: servidor vinculado a " + lotacoes.size() + " lotação(ões).");
+        if (lotacaoRepository.existsByPessoaId(servidor.getPessoa().getId())) {
+            throw new BusinessException("Não é possível excluir: servidor vinculado a lotações ativas");
         }
 
-        try {
-            servidorRepository.delete(servidor);
-            return "Servidor efetivo (ID: " + id + ") excluído com sucesso.";
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Erro de integridade ao excluir servidor: " + e.getRootCause().getMessage());
-        }
+        servidorRepository.delete(servidor);
     }
 }
