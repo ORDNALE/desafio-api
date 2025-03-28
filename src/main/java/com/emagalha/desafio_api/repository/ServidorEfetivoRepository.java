@@ -7,4 +7,5 @@ import com.emagalha.desafio_api.entity.ServidorEfetivo;
 
 @Repository
 public interface ServidorEfetivoRepository extends JpaRepository<ServidorEfetivo, Integer> {
+    boolean existsByMatricula(String matricula);
 }

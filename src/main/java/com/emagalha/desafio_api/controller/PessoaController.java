@@ -6,6 +6,8 @@ import com.emagalha.desafio_api.entity.Pessoa;
 import com.emagalha.desafio_api.service.PessoaService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -84,13 +86,14 @@ public class PessoaController {
 
     @DeleteMapping("/{id}")
     @Path("/excluir")
-    @Operation(summary = "Excluir uma pessoa")
+    @Operation(summary = "Excluir pessoa")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Pessoa excluída com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Pessoa não encontrada")
+        @ApiResponse(responseCode = "409", description = "Pessoa vinculada a outros registros", 
+                    content = @Content(schema = @Schema(example = "Não é possível excluir: pessoa vinculada a 2 lotação(ões) e 1 foto.")))
     })
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        pessoaService.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deletePessoa(@PathVariable Integer id) {
+        String mensagem = pessoaService.verificarVinculosEDeletar(id);
+        return ResponseEntity.ok(mensagem);
     }
 }

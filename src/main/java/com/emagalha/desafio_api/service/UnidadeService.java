@@ -5,6 +5,7 @@ import com.emagalha.desafio_api.dto.UnidadeListDTO;
 import com.emagalha.desafio_api.entity.Unidade;
 import com.emagalha.desafio_api.exception.BusinessException;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
+import com.emagalha.desafio_api.repository.LotacaoRepository;
 import com.emagalha.desafio_api.repository.UnidadeRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -17,8 +18,10 @@ import java.util.List;
 public class UnidadeService {
 
     private final UnidadeRepository unidadeRepository;
+    private final LotacaoRepository lotacaoRepository;
 
-    public UnidadeService(UnidadeRepository unidadeRepository) {
+    public UnidadeService(UnidadeRepository unidadeRepository, LotacaoRepository lotacaoRepository) {
+        this.lotacaoRepository = lotacaoRepository;
         this.unidadeRepository = unidadeRepository;
     }
 
@@ -66,5 +69,18 @@ public class UnidadeService {
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException("Não é possível excluir a unidade pois está vinculada a lotações.");
         }
+    }
+
+    public String deleteComVerificacao(Integer id) {
+        Unidade unidade = unidadeRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada"));
+        
+        long lotacoesAtivas = lotacaoRepository.countByUnidadeId(id);
+        if (lotacoesAtivas > 0) {
+            throw new BusinessException("Não é possível excluir: unidade vinculada a " + lotacoesAtivas + " lotação(ões)");
+        }
+        
+        unidadeRepository.delete(unidade);
+        return "Unidade (ID: " + id + ") excluída com sucesso.";
     }
 }

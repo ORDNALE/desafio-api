@@ -71,8 +71,8 @@ public class UnidadeController {
     @Path("/excluir")
     @Operation(summary = "Excluir unidade")
     @ApiResponse(responseCode = "204", description = "Unidade excluída com sucesso")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteUnidade(@PathVariable Integer id) {
+        String mensagem = service.deleteComVerificacao(id);
+        return ResponseEntity.ok(mensagem);
     }
 }

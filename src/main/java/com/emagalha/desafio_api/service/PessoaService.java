@@ -9,6 +9,7 @@ import com.emagalha.desafio_api.dto.PessoaListDTO;
 import com.emagalha.desafio_api.entity.Pessoa;
 import com.emagalha.desafio_api.exception.BusinessException;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
+import com.emagalha.desafio_api.repository.LotacaoRepository;
 import com.emagalha.desafio_api.repository.PessoaRepository;
 
 import jakarta.transaction.Transactional;
@@ -18,8 +19,10 @@ import jakarta.transaction.Transactional;
 public class PessoaService {
 
     private final PessoaRepository pessoaRepository;
+    private final LotacaoRepository lotacaoRepository;
 
-    public PessoaService(PessoaRepository pessoaRepository) {
+    public PessoaService(PessoaRepository pessoaRepository, LotacaoRepository lotacaoRepository) {
+        this.lotacaoRepository = lotacaoRepository;
         this.pessoaRepository = pessoaRepository;
     }
 
@@ -89,5 +92,45 @@ public class PessoaService {
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException("Não é possível excluir a pessoa pois está sendo referenciada por outros registros");
         }
+    }
+
+    @Transactional
+    public String verificarVinculosEDeletar(Integer pessoaId) {
+        Pessoa pessoa = pessoaRepository.findById(pessoaId)
+            .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + pessoaId));
+        
+        StringBuilder bloqueios = new StringBuilder();
+        
+        // 1. Verifica Fotos (relacionamento OneToMany)
+        if (!pessoa.getFotos().isEmpty()) {
+            bloqueios.append(pessoa.getFotos().size()).append(" foto(s)");
+        }
+        
+        // 2. Verifica Lotação (via repository)
+        Integer lotacoesCount = lotacaoRepository.countByPessoaId(pessoaId);
+        if (lotacoesCount > 0) {
+            if (bloqueios.length() > 0) bloqueios.append(", ");
+            bloqueios.append(lotacoesCount).append(" lotação(ões)");
+        }
+        
+        // 3. Verifica Servidor Efetivo (relacionamento OneToOne)
+        if (pessoa.getServidorEfetivo() != null) {
+            if (bloqueios.length() > 0) bloqueios.append(", ");
+            bloqueios.append("1 servidor efetivo");
+        }
+        
+        // 4. Verifica Servidor Temporário (relacionamento OneToOne)
+        if (pessoa.getServidorTemporario() != null) {
+            if (bloqueios.length() > 0) bloqueios.append(", ");
+            bloqueios.append("1 servidor temporário");
+        }
+        
+        // Se houver qualquer vínculo, lança exceção
+        if (bloqueios.length() > 0) {
+            throw new BusinessException("Não é possível excluir: pessoa vinculada a " + bloqueios.toString());
+        }
+        
+        pessoaRepository.delete(pessoa);
+        return "Pessoa (ID: " + pessoaId + ") excluída com sucesso.";
     }
 }

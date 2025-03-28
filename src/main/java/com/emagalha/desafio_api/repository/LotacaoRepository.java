@@ -11,4 +11,7 @@ public interface LotacaoRepository  extends JpaRepository<Lotacao, Integer>{
     List<Lotacao> findByUnidadeId(int unid_id);
     List<Lotacao> findByPessoaId(Integer pessoaId);
     List<Lotacao> findByPessoaAndUnidade(Pessoa pessoa, Unidade unidade);
+    boolean existsByPessoaId(Integer pessoaId);
+    Integer countByUnidadeId(Integer unidadeId);
+    Integer countByPessoaId(Integer pessoaId);
 }

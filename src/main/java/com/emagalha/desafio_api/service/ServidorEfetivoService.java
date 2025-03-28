@@ -43,6 +43,10 @@ public class ServidorEfetivoService {
             throw new BusinessException("Esta pessoa já está vinculada a outro tipo de servidor");
         }
 
+        if (servidorRepository.existsByMatricula(dto.getMatricula())) {
+            throw new BusinessException("Matrícula '" + dto.getMatricula() + "' já está em uso");
+        }
+
         ServidorEfetivo servidor = dto.toEntity();
         servidor.setPessoa(pessoa);
 
@@ -50,6 +54,7 @@ public class ServidorEfetivoService {
             ServidorEfetivo saved = servidorRepository.save(servidor);
             return ServidorEfetivoDTO.fromEntity(saved);
         } catch (DataIntegrityViolationException e) {
+            // Captura qualquer outro erro de integridade não tratado acima
             throw new BusinessException("Erro ao salvar servidor: " + e.getRootCause().getMessage());
         }
     }
