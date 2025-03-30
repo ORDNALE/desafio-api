@@ -27,10 +27,10 @@ public class Unidade implements Serializable {
     @Column(name = "unid_nome", length = 200, nullable = false)
     private String nome;
     
-    @Column(name = "unid_sigla", length = 20)
+    @Column(name = "unid_sigla", length = 20, nullable = false)
     private String sigla;
     
-    @OneToMany(mappedBy = "unidade", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "unidade")
     private Set<Lotacao> lotacoes = new HashSet<>();
     
     @ManyToMany

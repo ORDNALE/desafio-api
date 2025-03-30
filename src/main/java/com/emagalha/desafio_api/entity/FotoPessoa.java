@@ -28,14 +28,13 @@ public class FotoPessoa implements Serializable {
     @JoinColumn(name = "pes_id", nullable = false)
     private Pessoa pessoa;
     
-    @Column(name = "fp_data")
-    
+    @Column(name = "fp_data", nullable = false)
     private LocalDate data;
     
-    @Column(name = "fp_bucket", length = 50)
+    @Column(name = "fp_bucket", length = 50, nullable = false)
     private String bucket;
     
-    @Column(name = "fp_hash", length = 50)
+    @Column(name = "fp_hash", length = 50, nullable = false, unique = true)
     private String hash;
 
     @Override

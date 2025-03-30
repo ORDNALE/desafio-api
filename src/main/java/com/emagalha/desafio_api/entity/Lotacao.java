@@ -6,11 +6,12 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 @Data
 @Entity
-@Table(name = "lotacao")
+@Table(name = "lotacao", indexes = {
+    @Index(name = "idx_lotacao_pessoa", columnList = "pes_id"),
+    @Index(name = "idx_lotacao_unidade", columnList = "unid_id")
+})
 @SequenceGenerator(name = "seq_lotacao", sequenceName = "seq_lotacao", allocationSize = 1)
 public class Lotacao implements Serializable {
     
@@ -27,12 +28,10 @@ public class Lotacao implements Serializable {
     @JoinColumn(name = "unid_id", nullable = false)
     private Unidade unidade;
     
-    @Column(name = "lot_data_lotacao")
-    
+    @Column(name = "lot_data_lotacao", nullable = false)
     private LocalDate dataLotacao;
     
     @Column(name = "lot_data_remocao")
-    
     private LocalDate dataRemocao;
     
     @Column(name = "lot_portaria", length = 100)
@@ -56,5 +55,9 @@ public class Lotacao implements Serializable {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public boolean isAtiva() {
+        return dataRemocao == null || dataRemocao.isAfter(LocalDate.now());
     }
 }

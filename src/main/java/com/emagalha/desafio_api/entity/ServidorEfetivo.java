@@ -26,7 +26,8 @@ public class ServidorEfetivo implements Serializable {
     @JoinColumn(name = "pes_id")
     private Pessoa pessoa;
     
-    @Column(name = "se_matricula", length = 20, unique = true)
+    // Adicionar verificação de matrícula única
+    @Column(name = "se_matricula", length = 20, unique = true, nullable = false)
     private String matricula;
 
     @Override

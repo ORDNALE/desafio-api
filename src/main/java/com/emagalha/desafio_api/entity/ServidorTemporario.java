@@ -10,8 +10,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,11 +28,9 @@ public class ServidorTemporario implements Serializable {
     private Pessoa pessoa;
     
     @Column(name = "st_data_admissao")
-    
     private LocalDate dataAdmissao;
     
     @Column(name = "st_data_demissao")
-    
     private LocalDate dataDemissao;
 
     @Override

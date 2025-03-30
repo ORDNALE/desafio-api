@@ -38,13 +38,10 @@ public class ServidoresConsultaController {
         @ApiResponse(responseCode = "200", description = "Lista de servidores"),
         @ApiResponse(responseCode = "404", description = "Unidade não encontrada")
     })
-    public ResponseEntity<Page<ServidorUnidadeDTO>> listarPorUnidade(
-            @PathVariable Integer unidadeId,
-            @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
-        
-        return ResponseEntity.ok(
-            service.findServidoresByUnidade(unidadeId, pageable)
-        );
+    public Page<ServidorUnidadeDTO> getServidoresEfetivosPorUnidade(
+            @PathVariable Integer unidId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return service.findServidoresEfetivosPorUnidadeId(unidId, pageable);
     }
 
     @GetMapping("/endereco-funcional")

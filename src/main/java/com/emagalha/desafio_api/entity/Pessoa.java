@@ -8,7 +8,9 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -32,7 +34,6 @@ public class Pessoa implements Serializable {
     private String nome;
     
     @Column(name = "pes_data_nascimento")
-    
     private LocalDate dataNascimento;
     
     @Column(name = "pes_sexo", length = 9)
@@ -51,10 +52,10 @@ public class Pessoa implements Serializable {
     private ServidorTemporario servidorTemporario;
     
     @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<FotoPessoa> fotos = new HashSet<>();
+    private List<FotoPessoa> fotos = new ArrayList<>();
     
     @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Lotacao> lotacoes = new HashSet<>();
+    private List<Lotacao> lotacoes = new ArrayList<>();
     
     @ManyToMany
     @JoinTable(
@@ -83,5 +84,12 @@ public class Pessoa implements Serializable {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public Lotacao getLotacaoAtiva() {
+        return lotacoes.stream()
+            .filter(l -> l.getDataRemocao() == null)
+            .findFirst()
+            .orElse(null);
     }
 }

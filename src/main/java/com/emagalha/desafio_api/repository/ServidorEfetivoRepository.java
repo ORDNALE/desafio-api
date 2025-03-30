@@ -10,46 +10,18 @@ import com.emagalha.desafio_api.dto.EnderecoFuncionalDTO;
 import com.emagalha.desafio_api.dto.ServidorUnidadeDTO;
 import com.emagalha.desafio_api.entity.ServidorEfetivo;
 
-public interface ServidorEfetivoRepository extends JpaRepository<ServidorEfetivo, Long> {
-    Page<ServidorEfetivo> findByUnidade(Integer unidade, Pageable pageable);
+public interface ServidorEfetivoRepository extends JpaRepository<ServidorEfetivo, Integer> {
 
     boolean existsByMatricula(String matricula);
     @Query("SELECT COUNT(l) > 0 FROM Lotacao l WHERE l.pessoa.id = :pessoaId")
     boolean existsLotacaoByPessoaId(@Param("pessoaId") Integer pessoaId);
 
     @Query("""
-        SELECT NEW com.emagalha.desafio_api.dto.ServidorUnidadeDTO(
-            p.nome,
-            FUNCTION('YEAR', CURRENT_DATE) - FUNCTION('YEAR', p.dataNascimento) - 
-            CASE WHEN FUNCTION('MONTH', CURRENT_DATE) < FUNCTION('MONTH', p.dataNascimento) 
-                 OR (FUNCTION('MONTH', CURRENT_DATE) = FUNCTION('MONTH', p.dataNascimento) 
-                 AND FUNCTION('DAY', CURRENT_DATE) < FUNCTION('DAY', p.dataNascimento))
-            THEN 1 ELSE 0 END,
-            u.nome,
-            CASE WHEN fp.hash IS NOT NULL 
-                 THEN CONCAT('http://localhost:9000/meus-arquivos/', fp.hash) 
-                 ELSE NULL END
-        )
-        FROM ServidorEfetivo se
-        JOIN se.pessoa p
-        JOIN p.lotacoes l
-        JOIN l.unidade u
-        LEFT JOIN p.fotos fp
-        WHERE u.id = :unidadeId
-        AND l.dataRemocao IS NULL        
-        ORDER BY p.nome
-    """)
-    Page<ServidorUnidadeDTO> findServidoresByUnidade(
-        @Param("unidadeId") Integer unidadeId, 
-        Pageable pageable
-    );
-
-    @Query("""
         SELECT NEW com.emagalha.desafio_api.dto.EnderecoFuncionalDTO(
             p.nome,
             u.nome,
             e.logradouro,
-            COALESCE(e.numero, 'S/N'),
+            COALESCE(CAST(e.numero AS string), 'S/N'),
             e.bairro,
             c.nome,
             c.uf
@@ -58,14 +30,52 @@ public interface ServidorEfetivoRepository extends JpaRepository<ServidorEfetivo
         JOIN se.pessoa p
         JOIN p.lotacoes l
         JOIN l.unidade u
-        JOIN u.enderecos ue
-        JOIN ue.endereco e
+        JOIN u.enderecos e
         JOIN e.cidade c
         WHERE UPPER(p.nome) LIKE UPPER(CONCAT('%', :nomeParcial, '%'))
         AND l.dataRemocao IS NULL
         ORDER BY p.nome
     """)
     Page<EnderecoFuncionalDTO> findEnderecoFuncionalByNomeServidor(
-        @Param("nomeParcial") String nomeParcial, Pageable pageable
+        @Param("nomeParcial") String nomeParcial, 
+        Pageable pageable
+    );
+    
+    @Query(value = """
+        SELECT 
+            p.pes_nome AS nome,
+            EXTRACT(YEAR FROM AGE(CURRENT_DATE, p.pes_data_nascimento)) AS idade,
+            u.unid_nome AS unidadeLotacao,
+            COALESCE((SELECT fp.fp_bucket FROM foto_pessoa fp WHERE fp.pes_id = p.pes_id ORDER BY fp.fp_data DESC LIMIT 1), '') AS fotografia
+        FROM 
+            unidade u
+        JOIN 
+            lotacao l ON u.unid_id = l.unid_id
+        JOIN 
+            pessoa p ON l.pes_id = p.pes_id
+        JOIN 
+            servidor_efetivo se ON p.pes_id = se.pes_id
+        WHERE 
+            u.unid_id = :unidId
+            AND l.lot_data_remocao IS NULL
+    """,
+    countQuery = """
+        SELECT COUNT(*)
+        FROM 
+            unidade u
+        JOIN 
+            lotacao l ON u.unid_id = l.unid_id
+        JOIN 
+            pessoa p ON l.pes_id = p.pes_id
+        JOIN 
+            servidor_efetivo se ON p.pes_id = se.pes_id
+        WHERE 
+            u.unid_id = :unidId
+            AND l.lot_data_remocao IS NULL
+    """,
+    nativeQuery = true)
+    Page<ServidorUnidadeDTO> findServidoresEfetivosPorUnidadeId(
+        @Param("unidId") Integer unidId,
+        Pageable pageable
     );
 }

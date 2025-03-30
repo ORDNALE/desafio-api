@@ -1,4 +1,4 @@
-package com.emagalha.desafio_api.config;
+package com.emagalha.desafio_api.config.minio;
 
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,8 +11,7 @@ public class MinioProperties {
     private String accessKey;
     private String secretKey;
     private String bucketName;
-
-    // Getters e Setters (gerados pelo Lombok ou manualmente)
+    
     public String getUrl() {
         return url;
     }

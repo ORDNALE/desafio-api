@@ -41,12 +41,20 @@ public class Endereco implements Serializable {
     @JoinColumn(name = "cid_id", nullable = false)
     private Cidade cidade;
     
-    @ManyToMany(mappedBy = "enderecos", fetch = FetchType.LAZY)
+    @ManyToMany
+    @JoinTable(
+        name = "pessoa_endereco",
+        joinColumns = @JoinColumn(name = "end_id"),
+        inverseJoinColumns = @JoinColumn(name = "pes_id"))
     private Set<Pessoa> pessoas = new HashSet<>();
     
-    @ManyToMany(mappedBy = "enderecos", fetch = FetchType.LAZY)
+    @ManyToMany
+    @JoinTable(
+        name = "unidade_endereco",
+        joinColumns = @JoinColumn(name = "end_id"),
+        inverseJoinColumns = @JoinColumn(name = "unid_id"))
     private Set<Unidade> unidades = new HashSet<>();
-    
+        
     // Métodos helper
     public void addPessoa(Pessoa pessoa) {
         this.pessoas.add(pessoa);
