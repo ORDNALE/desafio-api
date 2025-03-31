@@ -1,13 +1,19 @@
 package com.emagalha.desafio_api.service;
 
-import com.emagalha.desafio_api.dto.ServidorEfetivoDTO;
-import com.emagalha.desafio_api.dto.ServidorEfetivoListDTO;
+import com.emagalha.desafio_api.dto.input.ServidorEfetivoInputDTO;
+import com.emagalha.desafio_api.dto.mapper.ServidorEfetivoMapper;
+import com.emagalha.desafio_api.dto.output.EnderecoFuncionalDTO;
+import com.emagalha.desafio_api.dto.output.ServidorEfetivoOutputDTO;
+import com.emagalha.desafio_api.dto.output.ServidorUnidadeDTO;
 import com.emagalha.desafio_api.entity.Pessoa;
 import com.emagalha.desafio_api.entity.ServidorEfetivo;
 import com.emagalha.desafio_api.exception.BusinessException;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.repository.PessoaRepository;
 import com.emagalha.desafio_api.repository.ServidorEfetivoRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import com.emagalha.desafio_api.repository.LotacaoRepository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,68 +24,84 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 @Transactional
 public class ServidorEfetivoService {
 
     private final ServidorEfetivoRepository servidorRepository;
     private final PessoaRepository pessoaRepository;
     private final LotacaoRepository lotacaoRepository;
+    private final ServidorEfetivoMapper servidorMapper;
 
-    public ServidorEfetivoService(
-        ServidorEfetivoRepository servidorRepository,
-        PessoaRepository pessoaRepository,
-        LotacaoRepository lotacaoRepository) {
-        this.servidorRepository = servidorRepository;
-        this.pessoaRepository = pessoaRepository;
-        this.lotacaoRepository = lotacaoRepository;
-    }
-
+    
     @Transactional
-    public ServidorEfetivoDTO save(ServidorEfetivoDTO dto) {
+    public ServidorEfetivoOutputDTO save(ServidorEfetivoInputDTO dto) {
+
         Pessoa pessoa = pessoaRepository.findById(dto.getPessoaId())
             .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + dto.getPessoaId()));
 
-        if (pessoa.getServidorEfetivo() != null || pessoa.getServidorTemporario() != null) {
-            throw new BusinessException("Esta pessoa já está vinculada a outro tipo de servidor");
+  
+        if (pessoa.getServidorEfetivo() != null) {
+            throw new BusinessException("Esta pessoa já é um servidor efetivo.");
         }
-
+        if (pessoa.getServidorTemporario() != null) {
+            throw new BusinessException("Esta pessoa já é um servidor temporário.");
+        }
+      
         if (servidorRepository.existsByMatricula(dto.getMatricula())) {
-            throw new BusinessException("Matrícula '" + dto.getMatricula() + "' já está em uso");
+            throw new BusinessException("Matrícula já cadastrada.");
         }
 
-        ServidorEfetivo servidor = dto.toEntity();
+        ServidorEfetivo servidor = new ServidorEfetivo();
         servidor.setPessoa(pessoa);
-
-        ServidorEfetivo saved = servidorRepository.save(servidor);
-        return ServidorEfetivoDTO.fromEntity(saved);
+        servidor.setMatricula(dto.getMatricula());
+        pessoa.setServidorEfetivo(servidor);
+        pessoaRepository.save(pessoa);
+        
+        return servidorMapper.toDTO(servidor);
     }
 
     @Transactional(readOnly = true)
-    public Page<ServidorEfetivoListDTO> findAll(Pageable pageable) {
+    public Page<ServidorEfetivoOutputDTO> findAll(Pageable pageable) {
         return servidorRepository.findAll(pageable)
-            .map(ServidorEfetivoListDTO::fromEntity);
+            .map(servidorMapper::toDTO);
     }
 
     @Transactional(readOnly = true)
-    public Optional<ServidorEfetivoListDTO> findById(Integer id) {
+    public Optional<ServidorEfetivoOutputDTO> findById(Integer id) {
         return servidorRepository.findById(id)
-            .map(ServidorEfetivoListDTO::fromEntity);
+            .map(servidorMapper::toDTO);
     }
 
     @Transactional
-    public ServidorEfetivoDTO update(Integer id, ServidorEfetivoDTO dto) {
+    public ServidorEfetivoOutputDTO update(Integer id, ServidorEfetivoInputDTO dto) {
         ServidorEfetivo servidor = servidorRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Servidor efetivo não encontrado com ID: " + id));
     
-        if (!servidor.getMatricula().equals(dto.getMatricula()) && 
-            servidorRepository.existsByMatricula(dto.getMatricula())) {
-            throw new BusinessException("Matrícula '" + dto.getMatricula() + "' já está em uso");
+        if (!servidor.getMatricula().equals(dto.getMatricula())) {
+            validarMatriculaUnica(dto.getMatricula());
         }
     
         servidor.setMatricula(dto.getMatricula());
-    
         ServidorEfetivo updated = servidorRepository.save(servidor);
-        return ServidorEfetivoDTO.fromEntity(updated);
+        return servidorMapper.toDTO(updated);
+    }
+
+
+    private void validarMatriculaUnica(String matricula) {
+        if (servidorRepository.existsByMatricula(matricula)) {
+            throw new BusinessException("Matrícula '" + matricula + "' já está em uso");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ServidorUnidadeDTO> findServidoresEfetivosPorUnidadeId(Integer unidadeId, Pageable pageable) {
+        return servidorRepository.findServidoresEfetivosPorUnidadeId(unidadeId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<EnderecoFuncionalDTO> findEnderecoFuncionalByNomeServidor(String nomeParcial, Pageable pageable) {
+        return servidorRepository.findEnderecoFuncionalByNomeServidor(nomeParcial, pageable);
     }
     
     @Transactional
@@ -90,6 +112,12 @@ public class ServidorEfetivoService {
         if (lotacaoRepository.existsByPessoaId(servidor.getPessoa().getId())) {
             throw new BusinessException("Não é possível excluir: servidor vinculado a lotações ativas");
         }
+
+        Pessoa pessoa = servidor.getPessoa();
+        pessoa.setServidorEfetivo(null);
+        pessoaRepository.save(pessoa);
+        
+        servidorRepository.delete(servidor);
 
         servidorRepository.delete(servidor);
     }

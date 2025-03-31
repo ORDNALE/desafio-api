@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 @Getter
 @Setter
 @NoArgsConstructor

@@ -1,7 +1,9 @@
 package com.emagalha.desafio_api.service;
 
-import com.emagalha.desafio_api.dto.UnidadeDTO;
-import com.emagalha.desafio_api.dto.UnidadeListDTO;
+
+import com.emagalha.desafio_api.dto.input.UnidadeInputDTO;
+import com.emagalha.desafio_api.dto.mapper.UnidadeMapper;
+import com.emagalha.desafio_api.dto.output.UnidadeOutputDTO;
 import com.emagalha.desafio_api.entity.Unidade;
 import com.emagalha.desafio_api.exception.BusinessException;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
@@ -19,36 +21,39 @@ public class UnidadeService {
 
     private final UnidadeRepository unidadeRepository;
     private final LotacaoRepository lotacaoRepository;
+    private final UnidadeMapper unidadeMapper;
 
     public UnidadeService(UnidadeRepository unidadeRepository, 
-                         LotacaoRepository lotacaoRepository) {
+                         LotacaoRepository lotacaoRepository,
+                         UnidadeMapper unidadeMapper) {
         this.unidadeRepository = unidadeRepository;
+        this.unidadeMapper = unidadeMapper;
         this.lotacaoRepository = lotacaoRepository;
     }
 
     @Transactional
-    public UnidadeDTO save(UnidadeDTO dto) {
+    public UnidadeOutputDTO save(UnidadeInputDTO dto) {
         validarSiglaUnica(dto.getSigla());
         
-        Unidade unidade = dto.toEntity();
+        Unidade unidade = unidadeMapper.toEntity(dto);
         Unidade saved = unidadeRepository.save(unidade);
-        return UnidadeDTO.fromEntity(saved);
+        return unidadeMapper.toDTO(saved);
     }
 
     @Transactional(readOnly = true)
-    public Page<UnidadeListDTO> findAll(Pageable pageable) {
+    public Page<UnidadeOutputDTO> findAll(Pageable pageable) {
         return unidadeRepository.findAll(pageable)
-                .map(UnidadeListDTO::fromEntity);
+                .map(unidadeMapper::toDTO);
     }
 
     @Transactional(readOnly = true)
-    public Optional<UnidadeListDTO> findById(Integer id) {
+    public Optional<UnidadeOutputDTO> findById(Integer id) {
         return unidadeRepository.findById(id)
-                .map(UnidadeListDTO::fromEntity);
+                .map(unidadeMapper::toDTO);
     }
 
     @Transactional
-    public UnidadeDTO update(Integer id, UnidadeDTO dto) {
+    public UnidadeOutputDTO update(Integer id, UnidadeInputDTO dto) {
         Unidade existingUnidade = unidadeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Unidade não encontrada com ID: " + id));
 
@@ -56,11 +61,10 @@ public class UnidadeService {
             validarSiglaUnica(dto.getSigla());
         }
 
-        existingUnidade.setNome(dto.getNome());
-        existingUnidade.setSigla(dto.getSigla());
-
-        return UnidadeDTO.fromEntity(unidadeRepository.save(existingUnidade));
-    }
+        unidadeMapper.updateFromDTO(dto, existingUnidade);
+        Unidade updated = unidadeRepository.save(existingUnidade);
+        return unidadeMapper.toDTO(updated);
+}
 
     @Transactional
     public void delete(Integer id) {

@@ -1,17 +1,16 @@
 package com.emagalha.desafio_api.service;
 
-import com.emagalha.desafio_api.dto.LotacaoDTO;
-import com.emagalha.desafio_api.dto.LotacaoListDTO;
+import com.emagalha.desafio_api.dto.input.LotacaoInputDTO;
+import com.emagalha.desafio_api.dto.mapper.LotacaoMapper;
+import com.emagalha.desafio_api.dto.output.LotacaoOutputDTO;
 import com.emagalha.desafio_api.entity.*;
 import com.emagalha.desafio_api.exception.BusinessException;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.repository.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,18 +23,21 @@ public class LotacaoService {
     private final LotacaoRepository lotacaoRepository;
     private final PessoaRepository pessoaRepository;
     private final UnidadeRepository unidadeRepository;
+    private final LotacaoMapper lotacaoMapper;
 
     public LotacaoService(
         LotacaoRepository lotacaoRepository,
         PessoaRepository pessoaRepository,
-        UnidadeRepository unidadeRepository) {
+        UnidadeRepository unidadeRepository,
+        LotacaoMapper lotacaoMapper) {
+        this.lotacaoMapper = lotacaoMapper;
         this.lotacaoRepository = lotacaoRepository;
         this.pessoaRepository = pessoaRepository;
         this.unidadeRepository = unidadeRepository;
     }
 
-    @Transactional
-    public LotacaoDTO save(LotacaoDTO dto) {
+     @Transactional
+    public LotacaoOutputDTO save(LotacaoInputDTO dto) {
         Pessoa pessoa = pessoaRepository.findById(dto.getPessoaId())
             .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + dto.getPessoaId()));
 
@@ -44,39 +46,35 @@ public class LotacaoService {
 
         validateLotacaoDates(dto.getDataLotacao(), dto.getDataRemocao());
 
-        Lotacao lotacao = dto.toEntity();
-        lotacao.setPessoa(pessoa);
-        lotacao.setUnidade(unidade);
-
+        Lotacao lotacao = lotacaoMapper.toEntity(dto, pessoa, unidade);
         Lotacao saved = lotacaoRepository.save(lotacao);
-        return LotacaoDTO.fromEntity(saved);
+        return lotacaoMapper.toDTO(saved);
     }
 
     @Transactional(readOnly = true)
-    public Page<LotacaoListDTO> findAll(Pageable pageable) {
+    public Page<LotacaoOutputDTO> findAll(Pageable pageable) {
         return lotacaoRepository.findAll(pageable)
-            .map(LotacaoListDTO::fromEntity);
+            .map(lotacaoMapper::toDTO);
     }
 
     @Transactional(readOnly = true)
-    public Optional<LotacaoListDTO> findById(Integer id) {
+    public Optional<LotacaoOutputDTO> findById(Integer id) {
         return lotacaoRepository.findById(id)
-            .map(LotacaoListDTO::fromEntity);
+            .map(lotacaoMapper::toDTO);
     }
 
     @Transactional
-    public LotacaoDTO update(Integer id, LotacaoDTO dto) {
+    public LotacaoOutputDTO update(Integer id, LotacaoInputDTO dto) {
         Lotacao existingLotacao = lotacaoRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Lotação não encontrada com ID: " + id));
 
         validateLotacaoDates(dto.getDataLotacao(), dto.getDataRemocao());
 
-        existingLotacao.setDataLotacao(dto.getDataLotacao());
-        existingLotacao.setDataRemocao(dto.getDataRemocao());
-        existingLotacao.setPortaria(dto.getPortaria());
-
-        return LotacaoDTO.fromEntity(lotacaoRepository.save(existingLotacao));
+        lotacaoMapper.updateFromDTO(dto, existingLotacao);
+        Lotacao updated = lotacaoRepository.save(existingLotacao);
+        return lotacaoMapper.toDTO(updated);
     }
+
 
     @Transactional
     public void delete(Integer id) {

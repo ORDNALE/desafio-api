@@ -1,24 +1,29 @@
 package com.emagalha.desafio_api.controller;
 
-import com.emagalha.desafio_api.dto.LotacaoDTO;
-import com.emagalha.desafio_api.dto.LotacaoListDTO;
+
+import com.emagalha.desafio_api.dto.input.LotacaoInputDTO;
+import com.emagalha.desafio_api.dto.output.LotacaoOutputDTO;
+import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.service.LotacaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.extensions.Extension;
 import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/lotacoes")
@@ -38,15 +43,15 @@ public class LotacaoController {
         this.service = service;
     }
 
-    @PostMapping("/incluir")
+    @PostMapping
     @Operation(summary = "Criar uma nova lotação")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Lotação criada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
-        @ApiResponse(responseCode = "404", description = "Pessoa ou Unidade não encontrada")
+        @ApiResponse(responseCode = "404", description = "Pessoa ou unidade não encontrada")
     })
-    public ResponseEntity<LotacaoDTO> create(@Valid @RequestBody LotacaoDTO dto) {
-        LotacaoDTO saved = service.save(dto);
+    public ResponseEntity<LotacaoOutputDTO> create(@Valid @RequestBody LotacaoInputDTO dto) {
+        LotacaoOutputDTO saved = service.save(dto);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
             .path("/{id}")
             .buildAndExpand(saved.getId())
@@ -54,32 +59,44 @@ public class LotacaoController {
         return ResponseEntity.created(location).body(saved);
     }
 
-    @GetMapping("/listar/{id}")
+    @GetMapping("/{id}")
     @Operation(summary = "Buscar lotação por ID")
-    public ResponseEntity<LotacaoListDTO> getById(@PathVariable Integer id) {
-        return service.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lotação encontrada",
+                    content = @Content(schema = @Schema(implementation = LotacaoOutputDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Lotação não encontrada")
+    })
+    public ResponseEntity<LotacaoOutputDTO> getById(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lotação não encontrada com ID: " + id)));
     }
 
-    @GetMapping("/listar-todos")
-    @Operation(summary = "Listar todas as lotações")
-    public ResponseEntity<List<LotacaoListDTO>> getAll(@RequestParam(defaultValue = "0") int page, 
-                                                       @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(service.findAll(pageable).getContent());
+    @GetMapping
+    @Operation(summary = "Listar todas as lotações (paginado)")
+    public ResponseEntity<Page<LotacaoOutputDTO>> getAll(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size); 
+        return ResponseEntity.ok(service.findAll(pageable));
     }
 
-    @PutMapping("/alterar/{id}")
+    @PutMapping("/{id}")
     @Operation(summary = "Atualizar lotação existente")
-    public ResponseEntity<LotacaoDTO> update(
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lotação atualizada com sucesso"),                    
+        @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+        @ApiResponse(responseCode = "404", description = "Lotação não encontrada"),
+        @ApiResponse(responseCode = "409", description = "Conflito de datas (data de remoção anterior à data de lotação)")
+    })
+    public ResponseEntity<LotacaoOutputDTO> update(
         @PathVariable Integer id,
-        @Valid @RequestBody LotacaoDTO dto
-    ) {
+        @Valid @RequestBody LotacaoInputDTO dto) {
+        
         return ResponseEntity.ok(service.update(id, dto));
     }
 
-    @DeleteMapping("/excluir/{id}")
+    @DeleteMapping("/{id}")
     @Operation(summary = "Excluir lotação")
     @ApiResponse(responseCode = "204", description = "Lotação excluída com sucesso")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {

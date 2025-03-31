@@ -1,3 +1,11 @@
+
+
+/*Classe para ser usado como auxiliar em ambiente local ou homologacao para testes.,
+ Isso garantirá que novos inserts não causem conflitos de chave primária,
+ independentemente de como os dados foram inseridos (via script ou aplicação).
+ * 
+ */
+
 package com.emagalha.desafio_api.util;
 
 import jakarta.persistence.EntityManager;
@@ -8,6 +16,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 @Component
 public class SequenceInitializer {
 
@@ -16,67 +26,120 @@ public class SequenceInitializer {
     @PersistenceContext
     private EntityManager em;
 
-    @Scheduled(initialDelay = 3000, fixedRate = Integer.MAX_VALUE)
+    // Mapeamento de tabelas para suas sequências e colunas ID
+    private static final Map<String, SequenceConfig> TABLE_SEQUENCE_MAP = Map.of(
+        "cidade", new SequenceConfig("seq_cidade", "cid_id"),
+        "endereco", new SequenceConfig("seq_endereco", "end_id"),
+        "pessoa", new SequenceConfig("seq_pessoa", "pes_id"),
+        "foto_pessoa", new SequenceConfig("seq_foto_pessoa", "fp_id"),
+        "unidade", new SequenceConfig("seq_unidade", "unid_id"),
+        "lotacao", new SequenceConfig("seq_lotacao", "lot_id")
+    );
+
+    @Scheduled(initialDelay = 3000, fixedRate = Long.MAX_VALUE)
     @Transactional
     public void initializeSequences() {
         try {
-            // cria as sequências, Garante o vínculo das sequências com as colunas ID.
+            // 1. Cria as sequências se não existirem
             createSequencesIfNotExists();
+            
+            // 2. Vincula as sequências às tabelas
             bindSequencesToTables();
-
+            
+            // 3. Atualiza as sequências com os IDs máximos atuais
+            updateSequencesToMaxIds();
+            
         } catch (Exception e) {
             logger.error("Falha crítica no SequenceInitializer", e);
         }
     }
 
     private void createSequencesIfNotExists() {
-        String[] sequences = {
-            "seq_cidade", "seq_endereco", "seq_pessoa",
-            "seq_foto_pessoa", "seq_unidade", "seq_lotacao"
-        };
-
-        for (String seq : sequences) {
+        TABLE_SEQUENCE_MAP.forEach((table, config) -> {
             try {
                 em.createNativeQuery(
-                    "CREATE SEQUENCE IF NOT EXISTS " + seq + " START WITH 1 INCREMENT BY 1"
+                    "CREATE SEQUENCE IF NOT EXISTS " + config.sequenceName + 
+                    " START WITH 1 INCREMENT BY 1"
                 ).executeUpdate();
-                logger.info("Sequência {} verificada/criada", seq);
+                logger.info("Sequência {} verificada/criada", config.sequenceName);
             } catch (Exception e) {
-                logger.error("Falha ao criar sequência {}", seq, e);
+                logger.error("Falha ao criar sequência {}", config.sequenceName, e);
             }
-        }
+        });
     }
 
     private void bindSequencesToTables() {
-        // Configura cada tabela para usar sua sequência correspondente
-        bindSequenceToTable("cidade", "cid_id", "seq_cidade");
-        bindSequenceToTable("endereco", "end_id", "seq_endereco");
-        bindSequenceToTable("pessoa", "pes_id", "seq_pessoa");
-        bindSequenceToTable("foto_pessoa", "fp_id", "seq_foto_pessoa");
-        bindSequenceToTable("unidade", "unid_id", "seq_unidade");
-        bindSequenceToTable("lotacao", "lot_id", "seq_lotacao");
+        TABLE_SEQUENCE_MAP.forEach((table, config) -> {
+            try {
+                // Verifica se a tabela existe
+                String checkTableExistsQuery = String.format(
+                    "SELECT to_regclass('%s') IS NOT NULL", table
+                );
+                Boolean tableExists = (Boolean) em.createNativeQuery(checkTableExistsQuery)
+                                                .getSingleResult();
+
+                if (Boolean.TRUE.equals(tableExists)) {
+                    // Altera a coluna para usar a sequência
+                    String sql = String.format(
+                        "ALTER TABLE %s ALTER COLUMN %s SET DEFAULT nextval('%s')",
+                        table, config.columnName, config.sequenceName
+                    );
+
+                    em.createNativeQuery(sql).executeUpdate();
+                    logger.info("Sequência {} vinculada a {}.{}", 
+                              config.sequenceName, table, config.columnName);
+                }
+            } catch (Exception e) {
+                logger.error("Falha ao vincular sequência {} a {}.{}", 
+                           config.sequenceName, table, config.columnName, e);
+            }
+        });
     }
 
-    private void bindSequenceToTable(String tableName, String columnName, String sequenceName) {
-        try {
-            // Verifica se a tabela existe
-            String checkTableExistsQuery = String.format(
-                "SELECT to_regclass('%s') IS NOT NULL", tableName
-            );
-            Boolean tableExists = (Boolean) em.createNativeQuery(checkTableExistsQuery).getSingleResult();
+    private void updateSequencesToMaxIds() {
+        TABLE_SEQUENCE_MAP.forEach((table, config) -> {
+            try {
+                // Verifica se a tabela existe
+                Boolean tableExists = (Boolean) em.createNativeQuery(
+                    "SELECT to_regclass('" + table + "') IS NOT NULL"
+                ).getSingleResult();
 
-            if (Boolean.TRUE.equals(tableExists)) {
-                // Altera a coluna para usar a sequência
-                String sql = String.format(
-                    "ALTER TABLE %s ALTER COLUMN %s SET DEFAULT nextval('%s')",
-                    tableName, columnName, sequenceName
-                );
+                if (Boolean.TRUE.equals(tableExists)) {
+                    // Obtém o ID máximo atual na tabela
+                    String maxIdQuery = String.format(
+                        "SELECT COALESCE(MAX(%s), 0) FROM %s", 
+                        config.columnName, table
+                    );
+                    Number maxId = (Number) em.createNativeQuery(maxIdQuery)
+                                             .getSingleResult();
 
-                em.createNativeQuery(sql).executeUpdate();
-                logger.info("Sequência {} vinculada a {}.{}", sequenceName, tableName, columnName);
+                    // Atualiza a sequência para o próximo valor após o máximo atual
+                    if (maxId != null && maxId.longValue() > 0) {
+                        String updateSeqQuery = String.format(
+                            "SELECT setval('%s', %d, true)", 
+                            config.sequenceName, maxId.longValue()
+                        );
+                        em.createNativeQuery(updateSeqQuery).getSingleResult();
+                        
+                        logger.info("Sequência {} atualizada para o valor máximo {} da tabela {}", 
+                                  config.sequenceName, maxId, table);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Falha ao atualizar sequência {} para a tabela {}", 
+                           config.sequenceName, table, e);
             }
-        } catch (Exception e) {
-            logger.error("Falha ao vincular sequência {} a {}.{}", sequenceName, tableName, columnName, e);
+        });
+    }
+
+    // Classe auxiliar para armazenar configuração de sequência
+    private static class SequenceConfig {
+        String sequenceName;
+        String columnName;
+
+        SequenceConfig(String sequenceName, String columnName) {
+            this.sequenceName = sequenceName;
+            this.columnName = columnName;
         }
     }
 }

@@ -1,7 +1,8 @@
 package com.emagalha.desafio_api.controller;
 
-import com.emagalha.desafio_api.dto.ServidorTemporarioDTO;
-import com.emagalha.desafio_api.dto.ServidorTemporarioListDTO;
+
+import com.emagalha.desafio_api.dto.input.ServidorTemporarioInputDTO;
+import com.emagalha.desafio_api.dto.output.ServidorTemporarioOutputDTO;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.exception.ErrorResponse;
 import com.emagalha.desafio_api.service.ServidorTemporarioService;
@@ -14,8 +15,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -40,33 +42,48 @@ public class ServidorTemporarioController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "409", description = "Conflito (pessoa já vinculada)")
     })
-    public ResponseEntity<ServidorTemporarioDTO> create(@Valid @RequestBody ServidorTemporarioDTO dto) {
-        ServidorTemporarioDTO saved = service.save(dto);
+    public ResponseEntity<ServidorTemporarioOutputDTO> create(
+            @Valid @RequestBody ServidorTemporarioInputDTO inputDTO) {
+        
+        ServidorTemporarioOutputDTO saved = service.save(inputDTO);
+        
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
             .path("/{id}")
             .buildAndExpand(saved.getId())
             .toUri();
+        
         return ResponseEntity.created(location).body(saved);
     }
 
     @GetMapping
     @Operation(summary = "Listar servidores temporários (paginado)")
-    @ApiResponse(responseCode = "200", description = "Lista paginada")
-    public ResponseEntity<Page<ServidorTemporarioListDTO>> getAll(
-        @PageableDefault(size = 10, sort = "pessoa.nome") Pageable pageable) {
+    @ApiResponse(responseCode = "200", description = "Lista de servidores temporários",
+                content = @Content(schema = @Schema(implementation = Page.class)))
+    public ResponseEntity<Page<ServidorTemporarioOutputDTO>> getAll(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "pessoa.nome") String sort,
+        @RequestParam(required = false) String nome) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+        
+        if (nome != null && !nome.isEmpty()) {
+            return ResponseEntity.ok(service.findByPessoaNomeContaining(nome, pageable));
+        }
+        
         return ResponseEntity.ok(service.findAll(pageable));
     }
-
+    
     @GetMapping("/{id}")
     @Operation(summary = "Buscar servidor temporário por ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Servidor encontrado",
-            content = @Content(schema = @Schema(implementation = ServidorTemporarioListDTO.class))),
+            content = @Content(schema = @Schema(implementation = ServidorTemporarioOutputDTO.class))),
         @ApiResponse(responseCode = "404", description = "Servidor não encontrado",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<ServidorTemporarioListDTO> getById(@PathVariable Integer id) {
-        ServidorTemporarioListDTO servidor = service.findById(id)
+    public ResponseEntity<ServidorTemporarioOutputDTO> getById(@PathVariable Integer id) {
+        ServidorTemporarioOutputDTO servidor = service.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Servidor temporário não encontrado com ID: " + id));
         return ResponseEntity.ok(servidor);
     }
@@ -78,9 +95,9 @@ public class ServidorTemporarioController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "404", description = "Servidor não encontrado")
     })
-    public ResponseEntity<ServidorTemporarioDTO> update(
+    public ResponseEntity<ServidorTemporarioOutputDTO> update(
         @PathVariable Integer id,
-        @Valid @RequestBody ServidorTemporarioDTO dto) {
+        @Valid @RequestBody ServidorTemporarioInputDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 

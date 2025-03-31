@@ -1,5 +1,6 @@
 package com.emagalha.desafio_api.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -8,8 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.emagalha.desafio_api.dto.PessoaDTO;
-import com.emagalha.desafio_api.dto.PessoaListDTO;
+import com.emagalha.desafio_api.dto.input.PessoaInputDTO;
+import com.emagalha.desafio_api.dto.mapper.PessoaMapper;
+import com.emagalha.desafio_api.dto.output.PessoaOutputDTO;
 import com.emagalha.desafio_api.entity.Pessoa;
 import com.emagalha.desafio_api.exception.BusinessException;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
@@ -26,62 +28,62 @@ public class PessoaService {
     private final LotacaoRepository lotacaoRepository;
     private final ServidorEfetivoRepository servidorEfetivoRepository;
     private final ServidorTemporarioRepository servidorTemporarioRepository;
+    private final PessoaMapper mapper;
 
     public PessoaService(PessoaRepository pessoaRepository,
                        LotacaoRepository lotacaoRepository,
                        ServidorEfetivoRepository servidorEfetivoRepository,
-                       ServidorTemporarioRepository servidorTemporarioRepository) {
+                       ServidorTemporarioRepository servidorTemporarioRepository,
+                       PessoaMapper mapper) {
         this.pessoaRepository = pessoaRepository;
         this.lotacaoRepository = lotacaoRepository;
         this.servidorEfetivoRepository = servidorEfetivoRepository;
         this.servidorTemporarioRepository = servidorTemporarioRepository;
+        this.mapper = mapper;
     }
 
     @Transactional
-    public PessoaDTO save(PessoaDTO pessoaDTO) {
-        validatePessoaData(pessoaDTO);
-
+    public PessoaOutputDTO save(PessoaInputDTO pessoaInputDTO) {
+        validatePessoaData(pessoaInputDTO); 
+        
         Pessoa pessoa = new Pessoa();
-        pessoa.setNome(pessoaDTO.getNome());
-        pessoa.setDataNascimento(pessoaDTO.getDataNascimento());
-        pessoa.setSexo(pessoaDTO.getSexo());
-        pessoa.setMae(pessoaDTO.getMae());
-        pessoa.setPai(pessoaDTO.getPai());
+        pessoa.setNome(pessoaInputDTO.getNome());
+        pessoa.setDataNascimento(pessoaInputDTO.getDataNascimento());
+        pessoa.setSexo(pessoaInputDTO.getSexo());
+        pessoa.setMae(pessoaInputDTO.getMae());
+        pessoa.setPai(pessoaInputDTO.getPai());
 
         Pessoa savedEntity = pessoaRepository.save(pessoa);
-        return PessoaDTO.fromEntity(savedEntity);
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<PessoaDTO> findById(Integer id) {
-        return pessoaRepository.findById(id)
-                .map(PessoaDTO::fromEntity);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<PessoaListDTO> findAll(Pageable pageable) {
-        return pessoaRepository.findAll(pageable)
-                .map(p -> new PessoaListDTO(
-                        p.getId(),
-                        p.getNome(),
-                        p.getDataNascimento()
-                ));
+        return mapper.toDTO(savedEntity);
     }
 
     @Transactional
-    public PessoaDTO update(Integer id, PessoaDTO pessoaDTO) {
+    public PessoaOutputDTO update(Integer id, PessoaInputDTO pessoaInputDTO) {
         Pessoa existingPessoa = pessoaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + id));
 
-        validatePessoaData(pessoaDTO);
+        validatePessoaData(pessoaInputDTO); 
 
-        existingPessoa.setNome(pessoaDTO.getNome());
-        existingPessoa.setDataNascimento(pessoaDTO.getDataNascimento());
-        existingPessoa.setSexo(pessoaDTO.getSexo());
-        existingPessoa.setMae(pessoaDTO.getMae());
-        existingPessoa.setPai(pessoaDTO.getPai());
+        existingPessoa.setNome(pessoaInputDTO.getNome());
+        existingPessoa.setDataNascimento(pessoaInputDTO.getDataNascimento());
+        existingPessoa.setSexo(pessoaInputDTO.getSexo());
+        existingPessoa.setMae(pessoaInputDTO.getMae());
+        existingPessoa.setPai(pessoaInputDTO.getPai());
 
-        return PessoaDTO.fromEntity(pessoaRepository.save(existingPessoa));
+        Pessoa updatedEntity = pessoaRepository.save(existingPessoa);
+        return mapper.toDTO(updatedEntity); 
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<PessoaOutputDTO> findById(Integer id) {
+        return pessoaRepository.findById(id)
+                .map(mapper::toDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PessoaOutputDTO> findAll(Pageable pageable) {
+        return pessoaRepository.findAll(pageable)
+        .map(mapper::toDTO);
     }
 
     @Transactional
@@ -94,9 +96,14 @@ public class PessoaService {
         pessoaRepository.delete(pessoa);
     }
 
-    private void validatePessoaData(PessoaDTO pessoaDTO) {
-        if (pessoaDTO.getNome() == null || pessoaDTO.getNome().trim().isEmpty()) {
+    private void validatePessoaData(PessoaInputDTO pessoaInputDTO) {
+        if (pessoaInputDTO.getNome() == null || pessoaInputDTO.getNome().trim().isEmpty()) {
             throw new BusinessException("Nome da pessoa é obrigatório");
+        }
+
+        if (pessoaInputDTO.getDataNascimento() != null && 
+        pessoaInputDTO.getDataNascimento().isAfter(LocalDate.now())) {
+        throw new IllegalArgumentException("Data de nascimento não pode ser futura");
         }
     }
 
@@ -163,4 +170,5 @@ public class PessoaService {
         pessoaRepository.delete(pessoa);
         return "Pessoa (ID: " + pessoaId + ") excluída com sucesso.";
     }
+
 }

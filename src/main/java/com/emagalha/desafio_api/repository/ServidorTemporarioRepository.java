@@ -16,4 +16,6 @@ public interface ServidorTemporarioRepository extends JpaRepository<ServidorTemp
     // Consulta para servidores ativos (dataDemissao nula ou futura)
     @Query("SELECT s FROM ServidorTemporario s WHERE s.dataDemissao IS NULL OR s.dataDemissao >= CURRENT_DATE")
     Page<ServidorTemporario> findAllAtivos(Pageable pageable);
+
+    Page<ServidorTemporario> findByPessoaNomeContainingIgnoreCase(String nome, Pageable pageable);
 }
