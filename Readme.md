@@ -47,9 +47,9 @@ O Swagger pode ser acessado em:🔗 http://localhost:8080/swagger-ui.html
  - Secret Key: minioadmin
  - Bucket Padrão: minhas-imagens.
 
-Spring Security
-Usuário: admin
-senha: admin123 
+(Spring Security)  
+ - Usuário: admin  
+ - senha: admin123  
 
 🛢️ Acessando o Banco de Dados PostgreSQL dentro do Container
   1. Execute o comando para entrar no container:
