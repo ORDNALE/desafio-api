@@ -92,4 +92,14 @@ public class GlobalExceptionHandler {
             LocalDateTime.now()
         );
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+    ErrorResponse error = new ErrorResponse(
+        "VALIDATION_ERROR",
+        ex.getMessage(),  
+        LocalDateTime.now()
+    );
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+}
 }

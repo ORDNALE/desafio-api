@@ -1,20 +1,14 @@
 package com.emagalha.desafio_api.service;
 
-import java.time.LocalDate;
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.emagalha.desafio_api.dto.FotoUploadResponse;
-import com.emagalha.desafio_api.dto.FotoUrlResponse;
-import com.emagalha.desafio_api.entity.FotoPessoa;
-import com.emagalha.desafio_api.entity.Pessoa;
-import com.emagalha.desafio_api.exception.BusinessException;
-import com.emagalha.desafio_api.exception.EntityNotFoundException;
-import com.emagalha.desafio_api.repository.FotoPessoaRepository;
-import com.emagalha.desafio_api.repository.PessoaRepository;
+import com.emagalha.desafio_api.dto.output.FotoUploadResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,52 +16,56 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FotoService {
     private final MinioService minioService;
-    private final FotoPessoaRepository fotoPessoaRepository;
-    private final PessoaRepository pessoaRepository;
+    //private final FotoPessoaRepository fotoPessoaRepository;
 
-    @Transactional
-    public FotoUploadResponse uploadFoto(Integer pessoaId, MultipartFile file) throws Exception {
-        // Validações
-        if (file.isEmpty()) {
-            throw new BusinessException("Arquivo não pode estar vazio");
+    public FotoUploadResponse uploadFoto(MultipartFile file) throws Exception {
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Arquivo não pode ser nulo ou vazio");
         }
 
-        Pessoa pessoa = pessoaRepository.findById(pessoaId)
-            .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
+      
+        String objectName = UUID.randomUUID() + "-" + 
+                          Objects.requireNonNull(file.getOriginalFilename());
+        
+        try (InputStream fileStream = file.getInputStream()) {
+            String urlTemporaria = minioService.uploadFoto(
+                fileStream,
+                objectName,
+                file.getContentType()
+            );
 
-        // Gera nome único para o arquivo
-        String objectName = "pessoas/%d/%s-%s".formatted(
-            pessoaId,
-            UUID.randomUUID(),
-            file.getOriginalFilename()
-        );
+            return new FotoUploadResponse(
+                objectName,                  
+                file.getOriginalFilename(), 
+                urlTemporaria,              
+                LocalDateTime.now()         
+            );
+        } catch (Exception e) {
+            throw new Exception("Falha ao fazer upload do arquivo: " + e.getMessage(), e);
+        }
+    }
 
-        // Upload para MinIO
-        String urlTemporaria = minioService.uploadFoto(file, objectName);
+    // public String recuperarObjectNamePorFotoId(Integer fotoId) throws Exception {
+    //     return fotoPessoaRepository.findById(fotoId)
+    //         .map(FotoPessoa::getHash)
+    //         .orElseThrow(() -> new Exception("Foto não encontrada para o ID: " + fotoId));
+    // }
+
+    // public FotoUrlResponse gerarUrlTemporaria(Integer fotoId) throws Exception {
+       
+    //     String objectName = fotoPessoaRepository.findObjectNameById(fotoId);
+    //     if (objectName == null) {
+    //         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Foto não encontrada para o ID: " + fotoId);
+
+    //     }
+
+    //     // Chama o MinIO para gerar a URL temporária
+    //     String url = minioService.gerarUrlTemporaria("minhas-imagens", objectName);
+
+    //     return new FotoUrlResponse(url, LocalDateTime.now().plusMinutes(5));
+    // }
+    
 
     
-        FotoPessoa foto = new FotoPessoa();
-        foto.setPessoa(pessoa);
-        foto.setBucket(minioService.getBucketName());
-        foto.setHash(objectName);
-        foto.setData(LocalDate.now());
-
-        FotoPessoa savedFoto = fotoPessoaRepository.save(foto);
-
-        return new FotoUploadResponse(
-            savedFoto.getId(),
-            file.getOriginalFilename(),
-            urlTemporaria,
-            LocalDate.now()
-        );
-    }
-
-    @Transactional(readOnly = true)
-    public FotoUrlResponse gerarUrlTempraria(Integer fotoId) throws Exception {
-        FotoPessoa foto = fotoPessoaRepository.findById(fotoId)
-            .orElseThrow(() -> new EntityNotFoundException("Foto não encontrada"));
-
-        String url = minioService.gerarUrlTemporaria(foto.getHash());
-        return new FotoUrlResponse(url, LocalDate.now().plusDays(1));
-    }
 }

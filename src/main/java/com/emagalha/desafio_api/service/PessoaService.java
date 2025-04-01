@@ -101,10 +101,6 @@ public class PessoaService {
             throw new BusinessException("Nome da pessoa é obrigatório");
         }
 
-        if (pessoaInputDTO.getDataNascimento() != null && 
-        pessoaInputDTO.getDataNascimento().isAfter(LocalDate.now())) {
-        throw new IllegalArgumentException("Data de nascimento não pode ser futura");
-        }
     }
 
     private void validateDeletionConstraints(Pessoa pessoa) {

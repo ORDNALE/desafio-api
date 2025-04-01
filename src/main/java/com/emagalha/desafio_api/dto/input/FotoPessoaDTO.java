@@ -1,4 +1,4 @@
-package com.emagalha.desafio_api.dto;
+package com.emagalha.desafio_api.dto.input;
 
 import lombok.Data;
 

@@ -1,85 +1,77 @@
 package com.emagalha.desafio_api.service;
 
+import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.emagalha.desafio_api.config.minio.MinioProperties;
+import io.jsonwebtoken.io.IOException;
+import io.jsonwebtoken.security.InvalidKeyException;
 import io.minio.BucketExistsArgs;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
-import io.minio.StatObjectArgs;
+import io.minio.errors.MinioException;
 import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class MinioService {
-
     private final MinioClient minioClient;
-    private final MinioProperties minioProperties;
+    private final String bucketName = "minhas-imagens";
 
-    public String uploadFoto(MultipartFile file, String objectName) throws Exception {
-        // Verifica e cria o bucket se não existir
-        if (!minioClient.bucketExists(BucketExistsArgs.builder()
-                .bucket(minioProperties.getBucketName())
-                .build())) {
-            minioClient.makeBucket(MakeBucketArgs.builder()
-                    .bucket(minioProperties.getBucketName())
+    public void createBucketIfNotExists() throws Exception {
+        try {
+            boolean bucketExists = minioClient.bucketExists(
+                BucketExistsArgs.builder()
+                    .bucket(bucketName)
                     .build());
+            
+            if (!bucketExists) {
+                minioClient.makeBucket(
+                    MakeBucketArgs.builder()
+                        .bucket(bucketName)
+                        .build());
+            
+            }
+        } catch (Exception e) {
+            throw new Exception("Falha ao verificar/criar bucket: " + e.getMessage(), e);
         }
+    }
 
-        // Faz o upload do arquivo
+    public String uploadFoto(InputStream file, String objectName, String contentType) throws Exception {
         minioClient.putObject(
             PutObjectArgs.builder()
-                .bucket(minioProperties.getBucketName())
+                .bucket(bucketName)
                 .object(objectName)
-                .stream(file.getInputStream(), file.getSize(), -1)
-                .contentType(file.getContentType())
-                .build()
-        );
+                .stream(file, -1, 10485760)
+                .contentType(contentType)
+                .build());
         
-        return gerarUrlTemporaria(objectName);
+        return gerarUrlTemporaria(bucketName, objectName);
     }
 
-    public String gerarUrlTemporaria(String objectName) throws Exception {
-        return minioClient.getPresignedObjectUrl(
-            GetPresignedObjectUrlArgs.builder()
-                .method(Method.GET)
-                .bucket(minioProperties.getBucketName())
-                .object(objectName)
-                .expiry(5, TimeUnit.MINUTES) // 5 minutos de expiração
-                .build()
-        );
-    }
 
-    // Método para verificar se um objeto existe
-    public boolean objectExists(String objectName) throws Exception {
+    public String gerarUrlTemporaria(String bucketName, String objectName) throws Exception {
         try {
-            minioClient.statObject(StatObjectArgs.builder()
-                    .bucket(minioProperties.getBucketName())
+            
+            int expiracao = (int) TimeUnit.MINUTES.toSeconds(5);
+
+            // Gera a URL pré-assinada
+            return minioClient.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                    .method(Method.GET)
+                    .bucket(bucketName)
                     .object(objectName)
-                    .build());
-            return true;
-        } catch (Exception e) {
-            return false;
+                    .expiry(expiracao)
+                    .build()
+            );
+        } catch (MinioException | InvalidKeyException | NoSuchAlgorithmException | IOException e) {
+            throw new Exception("Erro ao gerar URL temporária: " + e.getMessage(), e);
         }
     }
 
-    public String getBucketName() {
-        return minioProperties.getBucketName();
-    }
-
-    public void deleteObject(String objectName) throws Exception {
-        minioClient.removeObject(
-            RemoveObjectArgs.builder()
-                .bucket(minioProperties.getBucketName())
-                .object(objectName)
-                .build()
-        );
-    }
 }
