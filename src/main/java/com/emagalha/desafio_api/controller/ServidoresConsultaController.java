@@ -16,12 +16,23 @@ import com.emagalha.desafio_api.dto.output.ServidorUnidadeDTO;
 import com.emagalha.desafio_api.service.ServidorEfetivoService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/listar-servidores")
+@Tag(
+    name = "05 - Consulta - Servidores",
+    description = "API para consulta de servidores lotados",
+    extensions = @Extension(
+        name = "x-order", 
+        properties = @ExtensionProperty(name = "order", value = "05")
+    )
+)
 @RequiredArgsConstructor
 public class ServidoresConsultaController {
     

@@ -40,14 +40,10 @@ public class ServidorEfetivoService {
         Pessoa pessoa = pessoaRepository.findById(dto.getPessoaId())
             .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + dto.getPessoaId()));
 
-  
-        if (pessoa.getServidorEfetivo() != null) {
-            throw new BusinessException("Esta pessoa já é um servidor efetivo.");
+        if (pessoa.getServidorEfetivo() != null || pessoa.getServidorTemporario() != null) {
+            throw new BusinessException("Esta pessoa já está vinculada a outro tipo de servidor");
         }
-        if (pessoa.getServidorTemporario() != null) {
-            throw new BusinessException("Esta pessoa já é um servidor temporário.");
-        }
-      
+
         if (servidorRepository.existsByMatricula(dto.getMatricula())) {
             throw new BusinessException("Matrícula já cadastrada.");
         }
@@ -55,8 +51,8 @@ public class ServidorEfetivoService {
         ServidorEfetivo servidor = new ServidorEfetivo();
         servidor.setPessoa(pessoa);
         servidor.setMatricula(dto.getMatricula());
-        pessoa.setServidorEfetivo(servidor);
-        pessoaRepository.save(pessoa);
+        
+        servidor = servidorRepository.save(servidor);
         
         return servidorMapper.toDTO(servidor);
     }

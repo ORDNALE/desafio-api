@@ -7,6 +7,8 @@ import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.exception.ErrorResponse;
 import com.emagalha.desafio_api.service.ServidorTemporarioService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +28,14 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/servidores-temporarios")
-@Tag(name = "03 - Servidores Temporários", description = "API para servidores temporários")
+@Tag(
+    name = "07 - Servidor Temporário",
+    description = "API para gerenciamento de servidores temporários",
+    extensions = @Extension(
+        name = "x-order", 
+        properties = @ExtensionProperty(name = "order", value = "07")
+    )
+)
 public class ServidorTemporarioController {
 
     private final ServidorTemporarioService service;

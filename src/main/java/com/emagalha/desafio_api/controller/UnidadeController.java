@@ -6,6 +6,8 @@ import com.emagalha.desafio_api.dto.output.UnidadeOutputDTO;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.service.UnidadeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +25,14 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/unidades")
-@Tag(name = "04 - Unidades", description = "API para gerenciamento de unidades")
+@Tag(
+    name = "03 - Unidades",
+    description = "API para gerenciamento de Unidades",
+    extensions = @Extension(
+        name = "x-order", 
+        properties = @ExtensionProperty(name = "order", value = "03")
+    )
+)
 public class UnidadeController {
 
     private final UnidadeService service;

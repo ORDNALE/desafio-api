@@ -9,10 +9,21 @@ import org.springframework.web.bind.annotation.RestController;
 import com.emagalha.desafio_api.config.security.dto.LoginRequest;
 import com.emagalha.desafio_api.config.security.dto.LoginResponse;
 
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController
+@Tag(
+    name = "01 - Endpoint de autenticação",
+    description = "API para gerenciamento de autenticação",
+    extensions = @Extension(
+        name = "x-order", 
+        properties = @ExtensionProperty(name = "order", value = "05")
+    )
+)
 @RequestMapping("/api/auth")
 public class AuthController {
 

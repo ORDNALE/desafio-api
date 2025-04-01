@@ -27,11 +27,11 @@ import java.net.URI;
 @RestController
 @RequestMapping("/api/pessoas")
 @Tag(
-    name = "01 - Pessoa",
+    name = "04 - Pessoa",
     description = "API para gerenciamento de pessoas",
     extensions = @Extension(
         name = "x-order", 
-        properties = @ExtensionProperty(name = "order", value = "1")
+        properties = @ExtensionProperty(name = "order", value = "4")
     )
 )
 public class PessoaController {

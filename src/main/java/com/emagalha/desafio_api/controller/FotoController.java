@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.emagalha.desafio_api.dto.output.FotoUploadResponse;
 import com.emagalha.desafio_api.service.FotoService;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,7 +21,14 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/fotos")
 @RequiredArgsConstructor
-@Tag(name = "Upload / Recupera Fotos", description = "Endpoint para upload e recuperação de fotos")
+@Tag(
+    name = "02 - BucketFotos",
+    description = "Envia para MinIo e recebe link com recuperação de foto",
+    extensions = @Extension(
+        name = "x-order", 
+        properties = @ExtensionProperty(name = "order", value ="02")
+    )
+)
 public class FotoController {
 
     private final FotoService fotoService;

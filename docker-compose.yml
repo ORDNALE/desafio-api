@@ -9,6 +9,12 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
   minio:
     image: minio/minio:latest
     environment:
@@ -20,8 +26,10 @@ services:
   desafio-api:
     build: .
     depends_on:
-      - postgres
-      - minio
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
     ports:
       - "8080:8080"
 volumes:

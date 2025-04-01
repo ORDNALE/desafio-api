@@ -5,6 +5,8 @@ import com.emagalha.desafio_api.dto.output.ServidorEfetivoOutputDTO;
 import com.emagalha.desafio_api.exception.EntityNotFoundException;
 import com.emagalha.desafio_api.service.ServidorEfetivoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,7 +25,14 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/servidores-efetivos")
-@Tag(name = "02 - Servidor Efetivo", description = "API para servidores efetivos")
+@Tag(
+    name = "06 - Servidor Efetivo",
+    description = "API para gerenciamento de servidores efetivos",
+    extensions = @Extension(
+        name = "x-order", 
+        properties = @ExtensionProperty(name = "order", value = "06")
+    )
+)
 public class ServidorEfetivoController {
 
     private final ServidorEfetivoService service;
