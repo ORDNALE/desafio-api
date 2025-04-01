@@ -17,7 +17,7 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
-  sua-api:
+  desafio-api:
     build: .
     depends_on:
       - postgres
