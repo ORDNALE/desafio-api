@@ -1,6 +1,12 @@
 # Desafio API
 
 ## Dados de Inscrição
+Inscrição:
+    8831
+Nome:
+    ELANDRO SOARES MAGALHAES
+E-mail:
+    elandro10@outlook.com
 
 
 ## Descrição do Projeto
