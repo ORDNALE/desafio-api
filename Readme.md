@@ -1,16 +1,17 @@
+  DESAFIO-API  
 
-<h1 align="center">Desafio-API</h1>
-API desenvolvida em Java 17 com Spring Boot para avaliação técnica no processo seletivo PSS 02/2025/SEPLAG.
+  
+  API desenvolvida em Java 17 com Spring Boot para avaliação técnica no processo seletivo PSS 02/2025/SEPLAG.    
 
 
-📌 Dados de Inscrição:
-Inscrição: 8831
-Nome: ELANDRO SOARES MAGALHAES
-E-mail: elandro10@outlook.com
+📌 Dados de Inscrição  
+Inscrição: 8831  
+  Nome: ELANDRO SOARES MAGALHAES  
+E-mail: elandro10@outlook.com  
 
-📢 Importante!
-⚠️ Para o endpoint especifico (ServidoresConsulta) faça as consultas por endereço-funcional e consultar os servidores efetivos lotados, é necessário ter registros nas tabelas.
-⚠️ Para popular o manualmente, utilize o script SQL disponível na raiz do projeto, arquivo -> `script_teste.sql`
+📢 Importante!  
+⚠️ Para o endpoint especifico (ServidoresConsulta) faça as consultas por endereço-funcional e consultar os servidores efetivos lotados, é necessário ter registros nas tabelas.  
+⚠️ Para popular o manualmente, utilize o script SQL disponível na raiz do projeto, arquivo -> `script_teste.sql`  
 
 
 ⚙️ Configuração e Execução
