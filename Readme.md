@@ -1,40 +1,53 @@
-  DESAFIO-API  
+## DESAFIO-API  
 
-  
   API desenvolvida em Java 17 com Spring Boot para avaliação técnica no processo seletivo PSS 02/2025/SEPLAG.    
 
-
-📌 Dados de Inscrição  
-Inscrição: 8831  
+## 📌 Dados de Inscrição  
+Inscrição: 9172  
   Nome: ELANDRO SOARES MAGALHAES  
 E-mail: elandro10@outlook.com  
 
-📢 Importante!  
-⚠️ Para o endpoint especifico (ServidoresConsulta) faça as consultas por endereço-funcional e consultar os servidores efetivos lotados, é necessário ter registros nas tabelas.  
-⚠️ Para popular o manualmente, utilize o script SQL disponível na raiz do projeto, arquivo -> `script_teste.sql`  
+## ⚠️ Pré-requisitos  
+
+1. **Docker Desktop instalado**  
+   - Certifique-se de ter o Docker Desktop instalado e em execução.  
+   - [Download Docker Desktop](https://www.docker.com/products/docker-desktop)  
+
+2. **Configurar o arquivo `hosts`**  
+   - Adicione a seguinte linha ao arquivo `hosts` do seu sistema:  
+     ```
+     127.0.0.1 minio
+     ```  
+   - **Como editar o arquivo `hosts`:**  
+     - **Windows:** `C:\Windows\System32\drivers\etc\hosts` (edite como administrador).  
+     - **Linux/Mac:** `/etc/hosts` (use `sudo` para editar).  
+
+3. **Banco de dados populado**  
+   - É necessário ter dados nas tabelas, Para testar endpoints especificos de Consulta por parte de Nome e Consulta de servidores por unidade.
+   - Utilize o script `script_teste.sql` (disponível na raiz do projeto) para inserir registros manualmente.
 
 
-⚙️ Configuração e Execução
-  1️⃣ Clonar o Repositório
+## 🚀 Executando a Aplicação  
+ -  Subir os Containers
+  ```sh 
+  docker compose up --build -d  # ou `docker-compose up --build -d` (para versões mais antigas do Compose)
+  ```
+
+
+## 📄 Documentação da API
+O Swagger pode ser acessado em:🔗 http://localhost:8080/swagger-ui.html  
+
+## 🛢️ Acessando o Banco de Dados PostgreSQL dentro do Container
+  1. Execute o comando para entrar no container:
 ```sh
-git clone <https://github.com/ORDNALE/desafio-api.git>
-cd desafio-api
+docker exec -it postgres_container bash 
 ```
-
-  2️⃣ Subir os Containers do Banco e MinIO
-
-Certifique-se de ter **Docker** e **Docker Compose** instalados. Em seguida, execute:
+  2. Dentro do container, acesse o banco de dados:
 ```sh
-docker compose up -d  # ou `docker-compose up -d` (versões mais antigas)
-```
-Isso iniciará os containers do PostgreSQL e do MinIO.
+psql -U admin -d desafiotech_bd
+```    
 
-
-📄 Documentação da API
-O Swagger pode ser acessado em:🔗 http://localhost:8080/swagger-ui.html
-
-
-🔑 Credenciais
+## 🔑 Credenciais
 
 (PostgreSQL)
  - URL: jdbc:postgresql://postgres:5432/desafiotech_bd
@@ -51,18 +64,8 @@ O Swagger pode ser acessado em:🔗 http://localhost:8080/swagger-ui.html
  - Usuário: admin  
  - senha: admin123  
 
-🛢️ Acessando o Banco de Dados PostgreSQL dentro do Container
-  1. Execute o comando para entrar no container:
-```sh
-docker exec -it postgres_container bash
-```
-  2. Dentro do container, acesse o banco de dados:
-```sh
-psql -U admin -d desafiotech_bd
-```    
 
-🔗 Endpoints - Disponivel para testar pelo Swagger.
-# Requisitos Específicos!
+## 🔗 Endpoints - Disponivel para testar pelo Swagger.
 📌 FotoMinio
  - POST /api/fotos/upload - Upload de foto - recupera link temporario no Response.
 Parâmetro: file (formato multipart/form-data)
@@ -111,10 +114,10 @@ Parâmetro: file (formato multipart/form-data)
  - DELETE /api/lotacoes/{id} - Excluir uma lotação.
 
 🛠️ Tecnologias Utilizadas
-- **Java 17**
-- **Spring Boot 3.4.3**
-- **PostgreSQL** (Banco de dados)
-- **MinIO** (Armazenamento de imagens)
-- **Docker e Docker Compose**
-- **Maven** (Gerenciamento de dependências)
-- **Swagger/OpenAPI** (Documentação da API)
+- Java	17  
+- Spring Boot	3.4.3  
+- PostgreSQL	postgres:latest  
+- MinIO	minio/minio:latest  
+- Docker Compose	3.x ou superior	Orquestração dos containers
+- Maven	Wrapper (./mvnw)
+- Swagger/OpenAPI	2.8.5 (springdoc-openapi)	Documentação interativa da API

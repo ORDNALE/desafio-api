@@ -1,10 +1,12 @@
-package com.emagalha.desafio_api.config.security;
+package com.emagalha.desafio_api.security;
 
 import java.util.ArrayList;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.emagalha.desafio_api.service.TokenService;
 
 import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.FilterChain;

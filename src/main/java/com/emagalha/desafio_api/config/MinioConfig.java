@@ -1,8 +1,10 @@
-package com.emagalha.desafio_api.config.minio;
+package com.emagalha.desafio_api.config;
 
 import io.minio.MinioClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.emagalha.desafio_api.util.minioResource.MinioProperties;
 
 @Configuration
 public class MinioConfig {

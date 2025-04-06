@@ -1,4 +1,4 @@
-package com.emagalha.desafio_api.config.security;
+package com.emagalha.desafio_api.security;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.emagalha.desafio_api.config.security.dto.LoginRequest;
-import com.emagalha.desafio_api.config.security.dto.LoginResponse;
+
+import com.emagalha.desafio_api.security.dto.LoginRequest;
+import com.emagalha.desafio_api.security.dto.LoginResponse;
+import com.emagalha.desafio_api.service.TokenService;
 
 import io.swagger.v3.oas.annotations.extensions.Extension;
 import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;

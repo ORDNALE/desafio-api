@@ -1,4 +1,4 @@
-package com.emagalha.desafio_api.util;
+package com.emagalha.desafio_api.util.minioResource;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

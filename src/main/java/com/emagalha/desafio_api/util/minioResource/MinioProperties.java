@@ -1,4 +1,4 @@
-package com.emagalha.desafio_api.config.minio;
+package com.emagalha.desafio_api.util.minioResource;
 
 
 import org.springframework.boot.context.properties.ConfigurationProperties;

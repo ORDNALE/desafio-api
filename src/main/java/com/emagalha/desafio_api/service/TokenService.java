@@ -1,4 +1,4 @@
-package com.emagalha.desafio_api.config.security;
+package com.emagalha.desafio_api.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
