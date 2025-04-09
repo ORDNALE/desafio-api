@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
     ports:
-      - "5433:5432"
+      - "5433:5432"  # Mapeia 5432 do container para 5433 na máquina host
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -15,6 +15,8 @@ services:
       interval: 10s
       retries: 5
       timeout: 5s
+    networks:
+      - desafio-network  # Adiciona à rede
 
   minio:
     image: minio/minio:latest    
@@ -24,15 +26,17 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
     command: server /data --console-address ":9001"
     ports:
-      - "9000:9000"  # API
-      - "9001:9001"  # Console
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - minio_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://minio:9000/minio/health/live || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - desafio-network  # Adiciona à rede
 
   desafio-api:
     build: .
@@ -43,21 +47,17 @@ services:
       minio:
         condition: service_started
     ports:
-      - "8181:8080"
+      - "8080:8080"
     environment:
-      - SERVER_PORT=8080
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/desafiotech_bd
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=admin
-      - MINIO_ENDPOINT=http://minio:9000  
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-desafio:5432/desafiotech_bd
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/swagger-ui.html || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/swagger-ui/index.html || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - desafio-network
-    restart: unless-stopped  
+    restart: unless-stopped
 
 volumes:
   postgres_data:

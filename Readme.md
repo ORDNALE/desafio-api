@@ -35,7 +35,7 @@ E-mail: elandro10@outlook.com
 
 
 ## 📄 Documentação da API
-O Swagger pode ser acessado em:🔗 http://localhost:8080/swagger-ui.html  
+O Swagger pode ser acessado em:🔗 http://localhost:8080/swagger-ui/index.html
 
 ## 🛢️ Acessando o Banco de Dados PostgreSQL dentro do Container
   1. Execute o comando para entrar no container:
