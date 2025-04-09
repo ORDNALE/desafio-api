@@ -20,12 +20,7 @@ E-mail: elandro10@outlook.com
      ```  
    - **Como editar o arquivo `hosts`:**  
      - **Windows:** `C:\Windows\System32\drivers\etc\hosts` (edite como administrador).  
-     - **Linux/Mac:** `/etc/hosts` (use `sudo` para editar).  
-
-3. **Banco de dados populado**  
-   - É necessário ter dados nas tabelas, Para testar endpoints especificos de Consulta por parte de Nome e Consulta de servidores por unidade.
-   - Utilize o script `script_teste.sql` (disponível na raiz do projeto) para inserir registros manualmente.
-
+     - **Linux/Mac:** `/etc/hosts` (use `sudo` para editar).
 
 ## 🚀 Executando a Aplicação  
  -  Subir os Containers
@@ -38,14 +33,18 @@ E-mail: elandro10@outlook.com
 O Swagger pode ser acessado em:🔗 http://localhost:8080/swagger-ui/index.html
 
 ## 🛢️ Acessando o Banco de Dados PostgreSQL dentro do Container
-  1. Execute o comando para entrar no container:
+  1. **Execute o comando para entrar no container:**
 ```sh
 docker exec -it postgres_container bash 
 ```
-  2. Dentro do container, acesse o banco de dados:
+  2. **Dentro do container, acesse o banco de dados:**
 ```sh
 psql -U admin -d desafiotech_bd
-```    
+```
+
+  3. **Banco de dados populado**  
+   - É necessário ter dados nas tabelas, Para testar endpoints especificos de Consulta por parte de Nome e Consulta de servidores por unidade.
+   - Utilize o script `script_teste.sql` (disponível na raiz do projeto) para inserir registros manualmente.
 
 ## 🔑 Credenciais
 
