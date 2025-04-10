@@ -22,12 +22,11 @@ E-mail: elandro10@outlook.com
      - **Windows:** `C:\Windows\System32\drivers\etc\hosts` (edite como administrador).  
      - **Linux/Mac:** `/etc/hosts` (use `sudo` para editar).
 
-## 🚀 Executando a Aplicação  
+## 🚀 Contruir a Aplicação  
  -  Subir os Containers
   ```sh 
   docker compose up --build -d  # ou `docker-compose up --build -d` (para versões mais antigas do Compose)
   ```
-
 
 ## 📄 Documentação da API
 O Swagger pode ser acessado em:🔗 http://localhost:8080/swagger-ui/index.html
@@ -44,7 +43,20 @@ psql -U admin -d desafiotech_bd
 
   3. **Banco de dados populado**  
    - É necessário ter dados nas tabelas, Para testar endpoints especificos de Consulta por parte de Nome e Consulta de servidores por unidade.
-   - Utilize o script `script_teste.sql` (disponível na raiz do projeto) para inserir registros manualmente.
+   - Utilize o script `script_teste.sql` (disponível na raiz do projeto) para inserir registros manualmente.  
+
+  ## ⚠️ Atenção: Gerenciamento de IDs no Banco de Dados  
+
+  Este sistema utiliza **sequências automáticas** para geração de IDs no banco de dados PostgreSQL. É importante observar que:  
+    - Quando um registro é excluído:
+    - O ID excluído **não é reutilizado** automaticamente
+    - A sequência **continua incrementando** a partir do último valor.
+  ### Recomendações:
+  - Nunca assuma que um ID específico existe no banco
+  - Para operações que referenciam IDs existentes, sempre:
+    - Consulte primeiro o banco de dados
+    - Use os endpoints de listagem para obter IDs válidos
+    - Trate casos onde o ID pode não existir
 
 ## 🔑 Credenciais
 
