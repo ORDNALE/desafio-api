@@ -35,7 +35,7 @@ O Swagger pode ser acessado em:🔗 http://localhost:8080/swagger-ui/index.html
 ## 🛢️ Acessando o Banco de Dados PostgreSQL dentro do Container
   1. **Execute o comando para entrar no container:**
 ```sh
-docker exec -it postgres_container bash 
+docker exec -it postgres-desafio bash 
 ```
   2. **Dentro do container, acesse o banco de dados:**
 ```sh
@@ -49,7 +49,7 @@ psql -U admin -d desafiotech_bd
 ## 🔑 Credenciais
 
 (PostgreSQL)
- - URL: jdbc:postgresql://postgres:5432/desafiotech_bd
+ - URL: jdbc:postgresql://postgres-desafio:5432/desafiotech_bd
  - Usuário: admin
  - Senha: admin
 
@@ -67,7 +67,7 @@ psql -U admin -d desafiotech_bd
 ## 🔗 Endpoints - Disponivel para testar pelo Swagger.
 📌 FotoMinio
  - POST /api/fotos/upload - Upload de foto - recupera link temporario no Response.
-Parâmetro: file (formato multipart/form-data)
+Parâmetro: file (formato multipart/form-data).
 
 📌 ServidoresConsulta
  - GET /api/listar-servidores/{unidadeId} - Listar servidores efetivos por unidade.

@@ -2,14 +2,22 @@ package com.emagalha.desafio_api.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.emagalha.desafio_api.dto.output.FotoUploadResponse;
+import com.emagalha.desafio_api.dto.output.FotoUrlResponse;
+import com.emagalha.desafio_api.dto.output.ListaFotosMinioResponse;
 import com.emagalha.desafio_api.service.FotoService;
+
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.extensions.Extension;
 import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
@@ -51,12 +59,34 @@ public class FotoController {
         }
     }
 
+    @GetMapping("/url-temporaria")
+    @Operation(summary = "Gera URL temporária para acesso à foto")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "URL gerada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Erro ao gerar URL"),
+        @ApiResponse(responseCode = "404", description = "Arquivo não encontrado")
+    })
+    public ResponseEntity<FotoUrlResponse> gerarUrlTemporaria(
+        @Parameter(description = "Nome do objeto no MinIO (retornado no upload)", required = true)
+        @RequestParam String objectName) {
+        try {
+            FotoUrlResponse response = fotoService.gerarUrlTemporariaPorNome(objectName);
+            return ResponseEntity.ok(response);
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
-    // @GetMapping("/{fotoId}/url")
-    // public ResponseEntity<FotoUrlResponse> gerarUrlTemporaria(@PathVariable Integer fotoId) throws Exception {
-    //     return ResponseEntity.ok(fotoService.gerarUrlTemporaria(fotoId));
-    // }
-
-
-
+    @GetMapping("/listar")
+    @Operation(summary = "Lista todas as imagens disponíveis no MinIO")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de imagens retornada com sucesso"),
+        @ApiResponse(responseCode = "500", description = "Erro ao listar imagens")
+    })
+    public ResponseEntity<ListaFotosMinioResponse> listarImagens() {
+        ListaFotosMinioResponse response = fotoService.listarTodasImagens();
+        return ResponseEntity.ok(response);
+    }
 }
