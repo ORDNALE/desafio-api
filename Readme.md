@@ -1,13 +1,8 @@
 ## DESAFIO-API  
 
-  API desenvolvida em Java 17 com Spring Boot para avaliação técnica no processo seletivo PSS 02/2025/SEPLAG.    
+  API desenvolvida em Java 17 com Spring Boot para avaliação técnica no processo seletivo PSS 02/2025/SEPLAG. 
 
-## 📌 Dados de Inscrição  
-Inscrição: 9172  
-  Nome: ELANDRO SOARES MAGALHAES  
-E-mail: elandro10@outlook.com  
-
-## ⚠️ Pré-requisitos  
+## ⚠️ Pré-requisitos
 
 1. **Docker Desktop instalado**  
    - Certifique-se de ter o Docker Desktop instalado e em execução.  
